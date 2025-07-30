@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { StatCard, CarbonCreditCard } from '../components';
-import { useAndroidApi, useAndroidStorage } from '../hooks';
+import { useAndroidApi, useLocalStorage } from '../hooks';
+import { HiOutlineSparkles } from 'react-icons/hi';
 
 
 interface UserProfile {
@@ -22,11 +24,13 @@ const MyPage: React.FC = () => {
     getSystemInfo
   } = useAndroidApi();
   
+  const navigate = useNavigate();
+  
   const { 
     data: userProfile, 
     save: saveProfile, 
     isLoading: profileLoading 
-  } = useAndroidStorage<UserProfile>('userProfile', {
+  } = useLocalStorage<UserProfile>('userProfile', {
     name: 'ttohee Kim',
     email: 'ttohee@gmail.com',
     level: 1,
@@ -76,7 +80,7 @@ const MyPage: React.FC = () => {
   };
 
   const handleCarbonCreditClick = () => {
-    copyToClipboard('Carbon Credit 정보가 클립보드에 복사되었습니다!');
+    navigate('/my/credit');
   };
 
   if (profileLoading) {
@@ -96,7 +100,10 @@ const MyPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-800 mb-4">My</h1>
         
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-800">{userProfile?.name}</h2>
+          <div className="flex items-center mb-2">
+            <HiOutlineSparkles className="w-6 h-6 text-green-500 mr-2" />
+            <h2 className="text-xl font-bold text-gray-800">{userProfile?.name}</h2>
+          </div>
           <p className="text-gray-600">{userProfile?.email}</p>
         </div>
 
@@ -122,7 +129,7 @@ const MyPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-4 pb-24 space-y-4">
+      <div className="px-4 pb-20 space-y-4">
         <div className="bg-white rounded-lg p-4">
           <h3 className="font-semibold text-gray-800 mb-3">클립보드 테스트</h3>
           <div className="space-y-2">

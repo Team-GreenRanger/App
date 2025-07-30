@@ -9,6 +9,10 @@ import MapPage from './pages/MapPage';
 import MissionsPage from './pages/MissionsPage';
 import MyPage from './pages/MyPage';
 import RankingPage from './pages/RankingPage';
+import MyCarbonCreditPage from './pages/MyCarbonCreditPage';
+import RewardShopPage from './pages/RewardShopPage';
+import MyRewardsPage from './pages/MyRewardsPage';
+import CreditUsageHistoryPage from './pages/CreditUsageHistoryPage';
 
 
 const App: React.FC = () => {
@@ -27,7 +31,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="max-w-md mx-auto bg-white min-h-screen relative">
+      <div className="max-w-md mx-auto bg-gray-50 min-h-screen relative">
         <Routes>
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<HomePage />} />
@@ -35,6 +39,10 @@ const App: React.FC = () => {
           <Route path="/missions" element={<MissionsPage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/my" element={<MyPage />} />
+          <Route path="/my/credit" element={<MyCarbonCreditPage />} />
+          <Route path="/my/credit/reward-shop" element={<RewardShopPage />} />
+          <Route path="/my/credit/my-rewards" element={<MyRewardsPage />} />
+          <Route path="/my/credit/usage-history" element={<CreditUsageHistoryPage />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
         

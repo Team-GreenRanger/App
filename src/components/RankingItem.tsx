@@ -1,4 +1,5 @@
 import React from 'react';
+import { HiUser } from 'react-icons/hi';
 
 interface RankingItemProps {
   rank: number;
@@ -16,34 +17,42 @@ const RankingItem: React.FC<RankingItemProps> = ({
   avatar 
 }) => {
   return (
-    <div className={`flex items-center justify-between p-3 rounded-lg mb-2 ${
+    <div className={`flex items-center justify-between p-4 rounded-lg mb-2 border transition-colors ${
       isCurrentUser 
-        ? 'bg-green-200 border-2 border-green-400' 
-        : 'bg-green-50'
+        ? 'bg-green-50 border-green-200' 
+        : 'bg-white border-gray-100 hover:bg-gray-50'
     }`}>
       <div className="flex items-center space-x-3">
-        <span className="w-6 text-center font-semibold text-gray-700">
+        <span className={`w-6 text-center font-bold text-sm ${
+          isCurrentUser ? 'text-green-600' : 'text-gray-600'
+        }`}>
           {rank}
         </span>
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
             {avatar ? (
-              <img src={avatar} alt={name} className="w-8 h-8 rounded-full" />
+              <img src={avatar} alt={name} className="w-10 h-10 rounded-full" />
             ) : (
-              <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-              </svg>
+              <HiUser className="w-5 h-5 text-gray-400" />
             )}
           </div>
-          <span className="font-medium text-gray-800">{name}</span>
-          {isCurrentUser && (
-            <span className="bg-green-600 text-white text-xs px-2 py-1 rounded">
-              You
+          <div className="flex items-center space-x-2">
+            <span className={`font-medium ${
+              isCurrentUser ? 'text-green-900' : 'text-gray-900'
+            }`}>
+              {name}
             </span>
-          )}
+            {isCurrentUser && (
+              <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                You
+              </span>
+            )}
+          </div>
         </div>
       </div>
-      <span className="font-semibold text-gray-700">
+      <span className={`font-semibold ${
+        isCurrentUser ? 'text-green-600' : 'text-gray-700'
+      }`}>
         {points.toLocaleString()}
       </span>
     </div>

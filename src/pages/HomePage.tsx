@@ -1,27 +1,47 @@
-import React, { useEffect } from 'react';
-import { UserProfileHeader, CarbonCreditCard, EcoTipCard, LearnMoreCard } from '../components';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { UserProfileHeader, CarbonCreditCard, EcoTipCard, LearnMoreCard, NotificationCenter } from '../components';
 import { useAndroidApi } from '../hooks';
+import { HiSparkles, HiGlobeAlt } from 'react-icons/hi';
 
 const HomePage: React.FC = () => {
   const { updateBottomNavigation, showToast } = useAndroidApi();
+  const navigate = useNavigate();
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
 
   useEffect(() => {
     updateBottomNavigation('home');
   }, [updateBottomNavigation]);
 
   const handleCarbonCreditClick = () => {
-    showToast({ message: '카본 크레딧 상세 페이지로 이동합니다!' });
+    navigate('/my/credit');
   };
 
   const handleStartLearning = () => {
     showToast({ message: '학습 프로그램을 시작합니다!' });
   };
 
+  const handleNotificationClick = () => {
+    setIsNotificationVisible(true);
+  };
+
+  const handleCloseNotification = () => {
+    setIsNotificationVisible(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <UserProfileHeader name="ttohee Kim" />
+      <UserProfileHeader 
+        name="ttohee Kim" 
+        onNotificationClick={handleNotificationClick}
+      />
       
-      <div className="px-4 pb-24">
+      <NotificationCenter 
+        isVisible={isNotificationVisible}
+        onClose={handleCloseNotification}
+      />
+      
+      <div className="px-4 pb-20">
         <div className="mb-6">
           <CarbonCreditCard 
             points={4400} 
@@ -42,14 +62,14 @@ const HomePage: React.FC = () => {
           <EcoTipCard
             title="Today's Eco Tips"
             description="Unplug Electronic devices when not in use. Unplugging unused electronics can save about 50 kg of CO₂ annually and reduced your energy bill!"
-            icon="💡"
+            icon={<HiSparkles className="w-6 h-6 text-blue-600" />}
           />
 
           <LearnMoreCard
             title="Let's learn more!"
             description="Learn how to prevent climate change and stay prepared for extreme weather conditions."
             buttonText="Start Learning"
-            icon="📚"
+            icon={<HiGlobeAlt className="w-6 h-6 text-green-600" />}
             onButtonClick={handleStartLearning}
           />
         </div>

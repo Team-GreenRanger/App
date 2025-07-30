@@ -77,7 +77,7 @@ const RankingPage: React.FC = () => {
         />
       </div>
 
-      <div className="px-4 pb-24">
+      <div className="px-4 pb-20">
         <div className="space-y-1">
           {currentRankings.map((user, index) => (
             <div 

@@ -14,7 +14,7 @@ const CarbonCreditCard: React.FC<CarbonCreditCardProps> = ({
 }) => {
   return (
     <div
-      className="relative bg-gradient-to-r from-green-600 to-green-800 rounded-xl p-6 text-white cursor-pointer transition-transform hover:scale-105"
+      className="relative bg-green-600 rounded-lg p-6 text-white cursor-pointer transition-all hover:bg-green-700 active:scale-95"
       onClick={onClick}
       style={{
         backgroundImage: `url(${CarbonCreditBackgroundImage})`,
