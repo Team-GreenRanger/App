@@ -21,6 +21,7 @@ import CreditUsageHistoryPage from "./pages/CreditUsageHistoryPage";
 import WelcomePage from "./pages/WelcomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import OnboardingPage from "./pages/OnboardingPage";
 
 const App: React.FC = () => {
   const { log, isAvailable } = useAndroidApi();
@@ -43,6 +44,7 @@ const App: React.FC = () => {
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/ranking" element={<RankingPage />} />
