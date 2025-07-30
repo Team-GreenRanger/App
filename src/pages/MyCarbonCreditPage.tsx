@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAndroidApi } from '../hooks';
-import { HiChevronLeft, HiOutlineSparkles } from 'react-icons/hi';
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAndroidApi } from "../hooks";
+import { HiChevronLeft, HiOutlineSparkles } from "react-icons/hi";
 
 const MyCarbonCreditPage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,36 +14,36 @@ const MyCarbonCreditPage: React.FC = () => {
 
   const handleMenuClick = (menu: string) => {
     vibrate({ duration: 100 });
-    
+
     switch (menu) {
-      case 'rewards':
-        navigate('/my/credit/my-rewards');
+      case "rewards":
+        navigate("/my/credit/my-rewards");
         break;
-      case 'shop':
-        navigate('/my/credit/reward-shop');
+      case "shop":
+        navigate("/my/credit/reward-shop");
         break;
-      case 'history':
-        navigate('/my/credit/usage-history');
+      case "history":
+        navigate("/my/credit/usage-history");
         break;
     }
   };
 
   const menuItems = [
     {
-      id: 'rewards',
-      title: 'My Rewards',
-      description: 'Check your earned rewards'
+      id: "shop",
+      title: "Reward Shop",
+      description: "Exchange points for rewards",
     },
     {
-      id: 'shop',
-      title: 'Reward Shop',
-      description: 'Exchange points for rewards'
+      id: "rewards",
+      title: "My Rewards",
+      description: "Check your earned rewards",
     },
     {
-      id: 'history',
-      title: 'Credit Usage History',
-      description: 'View your credit transaction history'
-    }
+      id: "history",
+      title: "Credit Usage History",
+      description: "View your credit transaction history",
+    },
   ];
 
   return (
