@@ -1,8 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { UserProfileHeader, CarbonCreditCard, EcoTipCard, LearnMoreCard, NotificationCenter } from '../components';
-import { useAndroidApi } from '../hooks';
-import { HiSparkles, HiGlobeAlt } from 'react-icons/hi';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  UserProfileHeader,
+  CarbonCreditCard,
+  EcoTipCard,
+  LearnMoreCard,
+  NotificationCenter,
+} from "../components";
+import { useAndroidApi } from "../hooks";
+import { HiSparkles, HiGlobeAlt } from "react-icons/hi";
+import sparkle from "../assets/images/sparkles.svg";
 
 const HomePage: React.FC = () => {
   const { updateBottomNavigation, showToast } = useAndroidApi();
@@ -10,15 +17,15 @@ const HomePage: React.FC = () => {
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
 
   useEffect(() => {
-    updateBottomNavigation('home');
+    updateBottomNavigation("home");
   }, [updateBottomNavigation]);
 
   const handleCarbonCreditClick = () => {
-    navigate('/my/credit');
+    navigate("/my/credit");
   };
 
   const handleStartLearning = () => {
-    showToast({ message: '학습 프로그램을 시작합니다!' });
+    showToast({ message: "학습 프로그램을 시작합니다!" });
   };
 
   const handleNotificationClick = () => {
@@ -29,33 +36,32 @@ const HomePage: React.FC = () => {
     setIsNotificationVisible(false);
   };
 
+  const handleAiButton = () => {
+    navigate("/ai-chat");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <UserProfileHeader 
-        name="ttohee Kim" 
+      <UserProfileHeader
+        name="ttohee Kim"
         onNotificationClick={handleNotificationClick}
       />
-      
-      <NotificationCenter 
+
+      <NotificationCenter
         isVisible={isNotificationVisible}
         onClose={handleCloseNotification}
       />
-      
+
       <div className="px-4 pb-20">
         <div className="mb-6">
-          <CarbonCreditCard 
-            points={4400} 
-            onClick={handleCarbonCreditClick}
-          />
+          <CarbonCreditCard points={4400} onClick={handleCarbonCreditClick} />
         </div>
 
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-800 mb-2">
             Welcome ttohee Kim!
           </h2>
-          <p className="text-gray-600">
-            You planted 2 Trees this week
-          </p>
+          <p className="text-gray-600">You planted 2 Trees this week</p>
         </div>
 
         <div className="space-y-4">
@@ -74,6 +80,13 @@ const HomePage: React.FC = () => {
           />
         </div>
       </div>
+
+      <button
+        onClick={handleAiButton}
+        className="w-18 h-18 bg-gradient-to-br from-cyan-400 to-green-400 rounded-full flex justify-center items-center absolute right-4 bottom-29"
+      >
+        <img src={sparkle} />
+      </button>
     </div>
   );
 };

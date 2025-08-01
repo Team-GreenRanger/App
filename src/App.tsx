@@ -22,6 +22,9 @@ import WelcomePage from "./pages/WelcomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import AiChatPage from "./pages/AiChatPage";
+import AiWelcome from "./components/AiWelcomeSection";
+import AiWelcomeSection from "./components/AiWelcomeSection";
 
 const App: React.FC = () => {
   const { log, isAvailable } = useAndroidApi();
@@ -47,6 +50,7 @@ const App: React.FC = () => {
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<HomePage />} />
+          <Route path="/ai-chat" element={<AiChatPage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/missions" element={<MissionsPage />} />
           <Route path="/map" element={<MapPage />} />
@@ -60,8 +64,8 @@ const App: React.FC = () => {
           />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
-
-        {isDevelopment && <DevNavbar />}
+        {/* 
+        {isDevelopment && <DevNavbar />} */}
       </div>
     </Router>
   );
