@@ -25,6 +25,8 @@ import OnboardingPage from "./pages/OnboardingPage";
 import AiChatPage from "./pages/AiChatPage";
 import AiWelcome from "./components/AiWelcomeSection";
 import AiWelcomeSection from "./components/AiWelcomeSection";
+import EducationPage from "./pages/EducationPage";
+import LearnClimateChange from "./pages/LearnClimateChange";
 
 const App: React.FC = () => {
   const { log, isAvailable } = useAndroidApi();
@@ -62,10 +64,15 @@ const App: React.FC = () => {
             path="/my/credit/usage-history"
             element={<CreditUsageHistoryPage />}
           />
+          <Route path="/education" element={<EducationPage />} />
+          <Route
+            path="/education/climate-change"
+            element={<LearnClimateChange />}
+          />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
-        {/* 
-        {isDevelopment && <DevNavbar />} */}
+
+        {isDevelopment && <DevNavbar />}
       </div>
     </Router>
   );

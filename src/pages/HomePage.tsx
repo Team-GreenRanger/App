@@ -25,7 +25,7 @@ const HomePage: React.FC = () => {
   };
 
   const handleStartLearning = () => {
-    showToast({ message: "학습 프로그램을 시작합니다!" });
+    navigate("/education");
   };
 
   const handleNotificationClick = () => {
