@@ -6,7 +6,7 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation
+  useLocation,
 } from "react-router-dom";
 import { DevNavbar } from "./components";
 import { useAndroidApi } from "./hooks";
@@ -32,6 +32,7 @@ import LearnClimateChange from "./pages/LearnClimateChange";
 import LearnExtremeWeather from "./pages/LearnExtremeWeather";
 import LearningPage from "./pages/LearningPage";
 import CameraPage from "./pages/CameraPage";
+import MissionCompletePage from "./pages/MissionCompletePage";
 
 const AuthRedirect: React.FC = () => {
   const loggedIn = isLoggedIn();
@@ -40,7 +41,13 @@ const AuthRedirect: React.FC = () => {
 
 const NavigationController: React.FC = () => {
   const location = useLocation();
-  const { updateBottomNavigation, hideBottomNavigation, showBottomNavigation, isAvailable, log } = useAndroidApi();
+  const {
+    updateBottomNavigation,
+    hideBottomNavigation,
+    showBottomNavigation,
+    isAvailable,
+    log,
+  } = useAndroidApi();
 
   useEffect(() => {
     if (!isAvailable) return;
@@ -56,22 +63,29 @@ const NavigationController: React.FC = () => {
     } else {
       // 메인 페이지에서는 네비게이션 표시 및 업데이트
       showBottomNavigation();
-      
+
       // 페이지 ID 매핑
       const pageMap: { [key: string]: string } = {
-        '/home': 'home',
-        '/ranking': 'ranking', 
-        '/missions': 'missions',
-        '/map': 'map',
-        '/my': 'my'
+        "/home": "home",
+        "/ranking": "ranking",
+        "/missions": "missions",
+        "/map": "map",
+        "/my": "my",
       };
-      
+
       const pageId = pageMap[path];
       if (pageId) {
         updateBottomNavigation(pageId);
       }
     }
-  }, [location.pathname, isAvailable, updateBottomNavigation, hideBottomNavigation, showBottomNavigation, log]);
+  }, [
+    location.pathname,
+    isAvailable,
+    updateBottomNavigation,
+    hideBottomNavigation,
+    showBottomNavigation,
+    log,
+  ]);
 
   return null;
 };
@@ -105,6 +119,7 @@ const App: React.FC = () => {
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/missions" element={<MissionsPage />} />
           <Route path="/camera" element={<CameraPage />} />
+          <Route path="/mission-complete" element={<MissionCompletePage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/my" element={<MyPage />} />
           <Route path="/my/credit" element={<MyCarbonCreditPage />} />
