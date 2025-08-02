@@ -1,11 +1,10 @@
-import React from "react";
 import MissionComplete from "../components/MissionComplete";
 import MissionNotVerified from "../components/MissionNotVerified";
 
 interface MissionCompletePageProps {
   isFullyComplete?: boolean;
   points?: number;
-  isVerified: boolean;
+  isVerified?: boolean;
 }
 
 const MissionCompletePage = ({
