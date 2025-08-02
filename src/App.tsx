@@ -29,6 +29,7 @@ import EducationPage from "./pages/EducationPage";
 import LearnClimateChange from "./pages/LearnClimateChange";
 import LearnExtremeWeather from "./pages/LearnExtremeWeather";
 import LearningPage from "./pages/LearningPage";
+import CameraPage from "./pages/CameraPage";
 
 const App: React.FC = () => {
   const { log, isAvailable } = useAndroidApi();
@@ -57,6 +58,7 @@ const App: React.FC = () => {
           <Route path="/ai-chat" element={<AiChatPage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/missions" element={<MissionsPage />} />
+          <Route path="/camera" element={<CameraPage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/my" element={<MyPage />} />
           <Route path="/my/credit" element={<MyCarbonCreditPage />} />
@@ -79,7 +81,7 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
 
-        {isDevelopment && <DevNavbar />}
+        {/* {isDevelopment && <DevNavbar />} */}
       </div>
     </Router>
   );
