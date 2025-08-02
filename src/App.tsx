@@ -24,6 +24,14 @@ import WelcomePage from "./pages/WelcomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import AiChatPage from "./pages/AiChatPage";
+import AiWelcome from "./components/AiWelcomeSection";
+import AiWelcomeSection from "./components/AiWelcomeSection";
+import EducationPage from "./pages/EducationPage";
+import LearnClimateChange from "./pages/LearnClimateChange";
+import LearnExtremeWeather from "./pages/LearnExtremeWeather";
+import LearningPage from "./pages/LearningPage";
+import CameraPage from "./pages/CameraPage";
 
 const AuthRedirect: React.FC = () => {
   const loggedIn = isLoggedIn();
@@ -93,8 +101,10 @@ const App: React.FC = () => {
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/" element={<AuthRedirect />} />
           <Route path="/home" element={<HomePage />} />
+          <Route path="/ai-chat" element={<AiChatPage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/missions" element={<MissionsPage />} />
+          <Route path="/camera" element={<CameraPage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/my" element={<MyPage />} />
           <Route path="/my/credit" element={<MyCarbonCreditPage />} />
@@ -104,10 +114,20 @@ const App: React.FC = () => {
             path="/my/credit/usage-history"
             element={<CreditUsageHistoryPage />}
           />
+          <Route path="/education" element={<EducationPage />} />
+          <Route
+            path="/education/climate-change"
+            element={<LearnClimateChange />}
+          />
+          <Route
+            path="/education/extreme-weather"
+            element={<LearnExtremeWeather />}
+          />
+          <Route path="/education/learnig-page" element={<LearningPage />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
 
-        {isDevelopment && <DevNavbar />}
+        {/* {isDevelopment && <DevNavbar />} */}
       </div>
     </Router>
   );
