@@ -6,9 +6,11 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation
 } from "react-router-dom";
 import { DevNavbar } from "./components";
 import { useAndroidApi } from "./hooks";
+import { isLoggedIn } from "./utils/auth.utils";
 import HomePage from "./pages/HomePage";
 import MapPage from "./pages/MapPage";
 import MissionsPage from "./pages/MissionsPage";
@@ -22,6 +24,49 @@ import WelcomePage from "./pages/WelcomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import OnboardingPage from "./pages/OnboardingPage";
+
+const AuthRedirect: React.FC = () => {
+  const loggedIn = isLoggedIn();
+  return <Navigate to={loggedIn ? "/home" : "/welcome"} replace />;
+};
+
+const NavigationController: React.FC = () => {
+  const location = useLocation();
+  const { updateBottomNavigation, hideBottomNavigation, showBottomNavigation, isAvailable, log } = useAndroidApi();
+
+  useEffect(() => {
+    if (!isAvailable) return;
+
+    const path = location.pathname;
+    log(`경로 변경: ${path}`);
+
+    // 네비게이션을 숨겸야 하는 페이지들
+    const hiddenNavPages = ['/welcome', '/login', '/signup', '/onboarding'];
+    
+    if (hiddenNavPages.includes(path)) {
+      hideBottomNavigation();
+    } else {
+      // 메인 페이지에서는 네비게이션 표시 및 업데이트
+      showBottomNavigation();
+      
+      // 페이지 ID 매핑
+      const pageMap: { [key: string]: string } = {
+        '/home': 'home',
+        '/ranking': 'ranking', 
+        '/missions': 'missions',
+        '/map': 'map',
+        '/my': 'my'
+      };
+      
+      const pageId = pageMap[path];
+      if (pageId) {
+        updateBottomNavigation(pageId);
+      }
+    }
+  }, [location.pathname, isAvailable, updateBottomNavigation, hideBottomNavigation, showBottomNavigation, log]);
+
+  return null;
+};
 
 const App: React.FC = () => {
   const { log, isAvailable } = useAndroidApi();
@@ -40,12 +85,13 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="max-w-md mx-auto bg-gray-50 min-h-screen relative">
+        <NavigationController />
         <Routes>
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/" element={<AuthRedirect />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/missions" element={<MissionsPage />} />

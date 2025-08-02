@@ -19,6 +19,8 @@ export interface AndroidBridge {
   clearStorage(): void;
   updateBottomNavigation(pageId: string): void;
   resetFabFromBridge(): void;
+  hideBottomNavigation(): void;
+  showBottomNavigation(): void;
 }
 
 export interface EcoLifeApp {
@@ -28,6 +30,7 @@ export interface EcoLifeApp {
 declare global {
   interface Window {
     EcoLifeApp?: EcoLifeApp;
+    Android?: AndroidBridge;
   }
 }
 

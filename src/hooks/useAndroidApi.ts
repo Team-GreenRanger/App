@@ -93,6 +93,14 @@ export const useAndroidApi = () => {
     return executeWithLoading(() => AndroidApi.resetFab());
   }, [executeWithLoading]);
 
+  const hideBottomNavigation = useCallback(async () => {
+    return executeWithLoading(() => AndroidApi.hideBottomNavigation());
+  }, [executeWithLoading]);
+
+  const showBottomNavigation = useCallback(async () => {
+    return executeWithLoading(() => AndroidApi.showBottomNavigation());
+  }, [executeWithLoading]);
+
   const finishApp = useCallback(async () => {
     return executeWithLoading(() => AndroidApi.finishApp());
   }, [executeWithLoading]);
@@ -122,6 +130,8 @@ export const useAndroidApi = () => {
     clearStorage,
     updateBottomNavigation,
     resetFab,
+    hideBottomNavigation,
+    showBottomNavigation,
     finishApp,
     restartApp,
     log

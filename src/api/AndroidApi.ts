@@ -20,9 +20,15 @@ class AndroidApiService {
   }
 
   private initBridge(): void {
-    if (typeof window !== 'undefined' && window.EcoLifeApp?.AndroidBridge) {
-      this.bridge = window.EcoLifeApp.AndroidBridge;
-      this.isReady = true;
+    if (typeof window !== 'undefined') {
+      // window.Android 또는 window.EcoLifeApp.AndroidBridge 지원
+      if (window.Android) {
+        this.bridge = window.Android;
+        this.isReady = true;
+      } else if (window.EcoLifeApp?.AndroidBridge) {
+        this.bridge = window.EcoLifeApp.AndroidBridge;
+        this.isReady = true;
+      }
     }
   }
 
@@ -217,6 +223,28 @@ class AndroidApiService {
       return true;
     } catch (error) {
       console.error('FAB 리셋 실패:', error);
+      return false;
+    }
+  }
+
+  public async hideBottomNavigation(): Promise<boolean> {
+    try {
+      const bridge = this.ensureBridge();
+      bridge.hideBottomNavigation();
+      return true;
+    } catch (error) {
+      console.error('하단 네비게이션 숨기기 실패:', error);
+      return false;
+    }
+  }
+
+  public async showBottomNavigation(): Promise<boolean> {
+    try {
+      const bridge = this.ensureBridge();
+      bridge.showBottomNavigation();
+      return true;
+    } catch (error) {
+      console.error('하단 네비게이션 표시 실패:', error);
       return false;
     }
   }

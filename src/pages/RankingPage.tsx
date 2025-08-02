@@ -1,52 +1,81 @@
 import React, { useEffect, useState } from 'react';
 import { useAndroidApi } from '../hooks/useAndroidApi';
+import { privateApi } from '../api';
 import Tabs from '../components/Tabs';
-import { RankingHeaderCard, RankingItem } from '../components';
-
-interface RankingUser {
-  id: number;
-  name: string;
-  points: number;
-  isCurrentUser?: boolean;
-}
+import { RankingHeaderCard, RankingItem, ToastModal } from '../components';
+import { LeaderboardData, UserRankingStats, RankingUser } from '../types';
 
 const RankingPage: React.FC = () => {
   const { updateBottomNavigation, vibrate, showToast } = useAndroidApi();
-  const [activeTab, setActiveTab] = useState('local');
+  const [activeTab, setActiveTab] = useState('weekly');
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [modal, setModal] = useState({
+    isVisible: false,
+    type: 'info' as 'info' | 'warning' | 'error' | 'confirm',
+    title: '',
+    message: '',
+  });
 
   const tabs = [
-    { id: 'local', label: 'Local' },
-    { id: 'global', label: 'Global' }
-  ];
-
-  const localRankings: RankingUser[] = [
-    { id: 1, name: 'ttohee Kim', points: 4400, isCurrentUser: true },
-    { id: 2, name: 'Becky Bartell', points: 4000 },
-    { id: 3, name: 'Marsha Fisher', points: 3980 },
-    { id: 4, name: 'Michael Jackson', points: 3950 },
-    { id: 5, name: 'John Wick', points: 3900 },
-    { id: 6, name: 'Juanita Cormier', points: 3800 },
-    { id: 7, name: 'Tamara Schmidt', points: 3650 }
-  ];
-
-  const globalRankings: RankingUser[] = [
-    { id: 1, name: 'Sarah Johnson', points: 8500 },
-    { id: 2, name: 'Mike Chen', points: 7800 },
-    { id: 3, name: 'Emma Wilson', points: 7200 },
-    { id: 4, name: 'ttohee Kim', points: 4400, isCurrentUser: true },
-    { id: 5, name: 'David Brown', points: 4200 },
-    { id: 6, name: 'Lisa Garcia', points: 4100 },
-    { id: 7, name: 'Tom Anderson', points: 3950 }
+    { id: 'weekly', label: 'Weekly' },
+    { id: 'monthly', label: 'Monthly' },
+    { id: 'allTime', label: 'All Time' }
   ];
 
   useEffect(() => {
     updateBottomNavigation('ranking');
+    loadLeaderboardData();
   }, [updateBottomNavigation]);
 
-  const getCurrentUserRank = () => {
-    const rankings = activeTab === 'local' ? localRankings : globalRankings;
-    const currentUser = rankings.find(user => user.isCurrentUser);
-    return currentUser ? rankings.indexOf(currentUser) + 1 : 1;
+  const loadLeaderboardData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await privateApi.get<LeaderboardData>('/rankings/leaderboard');
+      setLeaderboardData(response.data);
+    } catch (error) {
+      console.error('리더보드 데이터 로드 실패:', error);
+      showModal('error', '오류', '랭킹 데이터를 로드하지 못했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const showModal = (type: 'info' | 'warning' | 'error' | 'confirm', title: string, message: string) => {
+    setModal({ isVisible: true, type, title, message });
+  };
+
+  const hideModal = () => {
+    setModal({ ...modal, isVisible: false });
+  };
+
+  const getCurrentRankings = (): RankingUser[] => {
+    if (!leaderboardData) return [];
+    
+    switch (activeTab) {
+      case 'weekly':
+        return leaderboardData.weekly.rankings;
+      case 'monthly':
+        return leaderboardData.monthly.rankings;
+      case 'allTime':
+        return leaderboardData.allTime.rankings;
+      default:
+        return [];
+    }
+  };
+
+  const getCurrentUserStats = (): UserRankingStats | null => {
+    return leaderboardData?.currentUserStats || null;
+  };
+
+  const getCurrentUserRank = (): number => {
+    const stats = getCurrentUserStats();
+    return stats?.currentRank || 0;
+  };
+
+  const getCurrentUserScore = (): number => {
+    const stats = getCurrentUserStats();
+    return stats?.currentScore || 0;
   };
 
   const handleRankingItemClick = (user: RankingUser) => {
@@ -54,11 +83,41 @@ const RankingPage: React.FC = () => {
     if (user.isCurrentUser) {
       showToast({ message: '내 순위입니다!' });
     } else {
-      showToast({ message: `${user.name}님의 순위입니다.` });
+      showToast({ message: `${user.userName}님의 순위입니다.` });
     }
   };
 
-  const currentRankings = activeTab === 'local' ? localRankings : globalRankings;
+  const handleLoadMore = async () => {
+    try {
+      showToast({ message: '더 많은 랭킹을 불러옵니다!' });
+    } catch (error) {
+      console.error('추가 랭킹 로드 실패:', error);
+    }
+  };
+
+  const getRankChangeText = () => {
+    const stats = getCurrentUserStats();
+    if (!stats) return '';
+    
+    const change = stats.rankChange;
+    if (change > 0) {
+      return `↑ ${change}`;
+    } else if (change < 0) {
+      return `↓ ${Math.abs(change)}`;
+    }
+    return '—';
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">랭킹 로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,37 +132,74 @@ const RankingPage: React.FC = () => {
 
         <RankingHeaderCard 
           rank={getCurrentUserRank()}
-          points={4400}
+          points={getCurrentUserScore()}
         />
+
+        {getCurrentUserStats() && (
+          <div className="bg-gray-50 rounded-lg p-4 mb-4">
+            <div className="flex justify-between items-center text-sm">
+              <div className="text-gray-600">
+                순위 변동: <span className={`font-medium ${
+                  getCurrentUserStats()!.rankChange > 0 ? 'text-green-600' : 
+                  getCurrentUserStats()!.rankChange < 0 ? 'text-red-600' : 'text-gray-600'
+                }`}>
+                  {getRankChangeText()}
+                </span>
+              </div>
+              <div className="text-gray-600">
+                다음 순위까지: <span className="font-medium text-blue-600">
+                  {getCurrentUserStats()!.scoreToNextRank} 점
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="px-4 pb-20">
         <div className="space-y-1">
-          {currentRankings.map((user, index) => (
+          {getCurrentRankings().map((user) => (
             <div 
-              key={user.id}
+              key={user.userId}
               onClick={() => handleRankingItemClick(user)}
               className="cursor-pointer"
             >
               <RankingItem
-                rank={index + 1}
-                name={user.name}
-                points={user.points}
+                rank={user.rank}
+                name={user.userName}
+                points={user.score}
                 isCurrentUser={user.isCurrentUser}
+                avatar={user.profileImageUrl}
               />
             </div>
           ))}
         </div>
 
-        <div className="mt-6 text-center">
-          <button 
-            onClick={() => showToast({ message: '더 많은 랭킹을 불러옵니다!' })}
-            className="text-green-600 font-medium hover:text-green-700 transition-colors"
-          >
-            더 보기
-          </button>
-        </div>
+        {getCurrentRankings().length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">랭킹 데이터가 없습니다.</p>
+          </div>
+        )}
+
+        {leaderboardData && getCurrentRankings().length > 0 && (
+          <div className="mt-6 text-center">
+            <button 
+              onClick={handleLoadMore}
+              className="text-green-600 font-medium hover:text-green-700 transition-colors"
+            >
+              더 보기
+            </button>
+          </div>
+        )}
       </div>
+
+      <ToastModal
+        isVisible={modal.isVisible}
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+        onClose={hideModal}
+      />
     </div>
   );
 };

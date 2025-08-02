@@ -8,30 +8,32 @@ export interface UserInfo {
   id: string;
   email: string;
   name: string;
+  profileImageUrl: string;
+  isVerified: boolean;
+  createdAt: string;
 }
 
-const TOKEN_STORAGE_KEY = 'ecolife_auth_tokens';
-const USER_INFO_STORAGE_KEY = 'ecolife_user_info';
+const TOKEN_STORAGE_KEY = 'token';
+const USER_INFO_STORAGE_KEY = 'user';
 
-export const saveAuthTokens = (tokens: AuthTokens): void => {
+export const saveAuthToken = (token: string): void => {
   try {
-    localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokens));
+    localStorage.setItem(TOKEN_STORAGE_KEY, token);
   } catch (error) {
     console.error('토큰 저장 실패:', error);
   }
 };
 
-export const getAuthTokens = (): AuthTokens | null => {
+export const getAuthToken = (): string | null => {
   try {
-    const tokens = localStorage.getItem(TOKEN_STORAGE_KEY);
-    return tokens ? JSON.parse(tokens) : null;
+    return localStorage.getItem(TOKEN_STORAGE_KEY);
   } catch (error) {
     console.error('토큰 조회 실패:', error);
     return null;
   }
 };
 
-export const removeAuthTokens = (): void => {
+export const removeAuthToken = (): void => {
   try {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
   } catch (error) {
@@ -65,28 +67,20 @@ export const removeUserInfo = (): void => {
   }
 };
 
-export const isTokenExpired = (tokens: AuthTokens): boolean => {
-  if (!tokens.expiresAt) return false;
-  return Date.now() >= tokens.expiresAt;
-};
-
-export const getValidAccessToken = (): string | null => {
-  const tokens = getAuthTokens();
-  if (!tokens) return null;
-  
-  if (isTokenExpired(tokens)) {
-    removeAuthTokens();
-    return null;
-  }
-  
-  return tokens.accessToken;
-};
-
 export const logout = (): void => {
-  removeAuthTokens();
+  removeAuthToken();
   removeUserInfo();
 };
 
 export const isLoggedIn = (): boolean => {
-  return getValidAccessToken() !== null;
+  return getAuthToken() !== null;
+};
+
+export const saveAuthData = (token: string, user: UserInfo): void => {
+  saveAuthToken(token);
+  saveUserInfo(user);
+};
+
+export const clearAuthData = (): void => {
+  logout();
 };

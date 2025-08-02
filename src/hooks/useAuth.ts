@@ -1,33 +1,26 @@
 import { useState, useCallback, useEffect } from 'react';
 import { 
-  AuthTokens, 
   UserInfo, 
-  saveAuthTokens, 
-  getAuthTokens, 
-  removeAuthTokens,
-  saveUserInfo,
+  saveAuthData,
+  getAuthToken, 
   getUserInfo,
-  removeUserInfo,
-  isTokenExpired,
-  logout as utilLogout
+  clearAuthData,
+  isLoggedIn
 } from '../utils/auth.utils';
 
 export const useAuth = () => {
-  const [tokens, setTokens] = useState<AuthTokens | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const initAuth = () => {
-      const storedTokens = getAuthTokens();
+      const storedToken = getAuthToken();
       const storedUserInfo = getUserInfo();
       
-      if (storedTokens && !isTokenExpired(storedTokens)) {
-        setTokens(storedTokens);
+      if (storedToken && storedUserInfo) {
+        setToken(storedToken);
         setUserInfo(storedUserInfo);
-      } else if (storedTokens && isTokenExpired(storedTokens)) {
-        removeAuthTokens();
-        removeUserInfo();
       }
       
       setIsLoading(false);
@@ -36,11 +29,10 @@ export const useAuth = () => {
     initAuth();
   }, []);
 
-  const login = useCallback(async (authTokens: AuthTokens, user: UserInfo) => {
+  const login = useCallback(async (authToken: string, user: UserInfo) => {
     try {
-      saveAuthTokens(authTokens);
-      saveUserInfo(user);
-      setTokens(authTokens);
+      saveAuthData(authToken, user);
+      setToken(authToken);
       setUserInfo(user);
       return true;
     } catch (error) {
@@ -51,8 +43,8 @@ export const useAuth = () => {
 
   const logout = useCallback(() => {
     try {
-      utilLogout();
-      setTokens(null);
+      clearAuthData();
+      setToken(null);
       setUserInfo(null);
       return true;
     } catch (error) {
@@ -61,49 +53,32 @@ export const useAuth = () => {
     }
   }, []);
 
-  const updateTokens = useCallback((newTokens: AuthTokens) => {
-    try {
-      saveAuthTokens(newTokens);
-      setTokens(newTokens);
-      return true;
-    } catch (error) {
-      console.error('토큰 업데이트 실패:', error);
-      return false;
-    }
-  }, []);
-
   const updateUserInfo = useCallback((newUserInfo: UserInfo) => {
     try {
-      saveUserInfo(newUserInfo);
-      setUserInfo(newUserInfo);
+      if (token) {
+        saveAuthData(token, newUserInfo);
+        setUserInfo(newUserInfo);
+      }
       return true;
     } catch (error) {
       console.error('사용자 정보 업데이트 실패:', error);
       return false;
     }
-  }, []);
+  }, [token]);
 
   const getAccessToken = useCallback((): string | null => {
-    if (!tokens) return null;
-    
-    if (isTokenExpired(tokens)) {
-      logout();
-      return null;
-    }
-    
-    return tokens.accessToken;
-  }, [tokens, logout]);
+    return getAuthToken();
+  }, []);
 
-  const isAuthenticated = Boolean(tokens && userInfo && !isTokenExpired(tokens));
+  const isAuthenticated = isLoggedIn() && Boolean(token && userInfo);
 
   return {
-    tokens,
+    token,
     userInfo,
     isLoading,
     isAuthenticated,
     login,
     logout,
-    updateTokens,
     updateUserInfo,
     getAccessToken
   };

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import logo from "../assets/images/EcoLifeLogo.svg";
 import leaf from "../assets/images/leaf.svg";
@@ -7,6 +8,7 @@ import image from "../assets/images/image_icon.svg";
 import check from "../assets/images/check.svg";
 
 const OnboardingPage = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(0);
 
   const pages = [
@@ -39,6 +41,8 @@ const OnboardingPage = () => {
   const handleNext = () => {
     if (currentPage < pages.length - 1) {
       setCurrentPage(currentPage + 1);
+    } else {
+      navigate('/login');
     }
   };
 
