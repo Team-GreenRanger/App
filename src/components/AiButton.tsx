@@ -12,7 +12,7 @@ const AiButton = () => {
   return (
     <button
       onClick={handleClick}
-      className="w-18 h-18 rounded-full bg-gradient-to-br from-cyan-400 to-green-400 flex justify-center items-center absolute bottom-36 right-4 shadow-[3px_3px_12px_2px_rgba(0,_0,_0,_0.1)]"
+      className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-green-400 flex justify-center items-center absolute bottom-36 right-4 shadow-[3px_3px_12px_2px_rgba(0,_0,_0,_0.1)]"
     >
       <img src={sparkle} />
     </button>
