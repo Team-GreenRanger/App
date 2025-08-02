@@ -49,7 +49,7 @@ const NavigationController: React.FC = () => {
     log(`경로 변경: ${path}`);
 
     // 네비게이션을 숨겸야 하는 페이지들
-    const hiddenNavPages = ['/welcome', '/login', '/signup', '/onboarding'];
+    const hiddenNavPages = ['/welcome', '/login', '/signup', '/onboarding','/camera'];
     
     if (hiddenNavPages.includes(path)) {
       hideBottomNavigation();
