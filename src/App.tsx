@@ -27,6 +27,8 @@ import AiWelcome from "./components/AiWelcomeSection";
 import AiWelcomeSection from "./components/AiWelcomeSection";
 import EducationPage from "./pages/EducationPage";
 import LearnClimateChange from "./pages/LearnClimateChange";
+import LearnExtremeWeather from "./pages/LearnExtremeWeather";
+import LearningPage from "./pages/LearningPage";
 
 const App: React.FC = () => {
   const { log, isAvailable } = useAndroidApi();
@@ -69,6 +71,11 @@ const App: React.FC = () => {
             path="/education/climate-change"
             element={<LearnClimateChange />}
           />
+          <Route
+            path="/education/extreme-weather"
+            element={<LearnExtremeWeather />}
+          />
+          <Route path="/education/learnig-page" element={<LearningPage />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
 
