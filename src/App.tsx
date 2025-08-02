@@ -63,6 +63,7 @@ const NavigationController: React.FC = () => {
       "/onboarding",
       "/camera",
       "/mission-complete",
+      "/ai-chat",
     ];
 
     if (hiddenNavPages.includes(path)) {
