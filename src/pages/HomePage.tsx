@@ -10,7 +10,12 @@ import {
 } from "../components";
 import { useAndroidApi } from "../hooks";
 import { privateApi } from "../api";
-import { UserProfile, UserStatistics, EcoTip } from "../types";
+import {
+  UserProfile,
+  UserStatistics,
+  EcoTip,
+  CarbonCreditBalance,
+} from "../types";
 import { HiSparkles, HiGlobeAlt } from "react-icons/hi";
 
 const HomePage = () => {

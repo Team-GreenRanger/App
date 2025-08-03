@@ -1,90 +1,76 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAndroidApi } from '../hooks';
-import { HiChevronLeft, HiPlus, HiMinus } from 'react-icons/hi';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAndroidApi } from "../hooks";
+import { HiChevronLeft, HiPlus, HiMinus } from "react-icons/hi";
+import { CarbonCreditBalance, TransactionResponse } from "../types";
+import { getCarbonCreditBalance, getCarbonCreditTransactions } from "../utils";
 
-interface Transaction {
-  id: number;
-  type: 'earned' | 'spent';
-  amount: number;
-  description: string;
-  date: string;
-  category: string;
-}
-
-const CreditUsageHistoryPage: React.FC = () => {
+const CreditUsageHistoryPage = () => {
   const navigate = useNavigate();
   const { vibrate } = useAndroidApi();
-  const [filter, setFilter] = useState<'all' | 'earned' | 'spent'>('all');
+  const [filter, setFilter] = useState<"all" | "EARNED" | "SPENT">("all");
+  const [creditData, setCreditData] = useState<CarbonCreditBalance | null>(
+    null
+  );
+  const [transactionData, setTransactionData] =
+    useState<TransactionResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const transactions: Transaction[] = [
-    {
-      id: 1,
-      type: 'earned',
-      amount: 100,
-      description: 'Mission completed: Turn off unused lights',
-      date: '2024-07-27',
-      category: 'Mission'
-    },
-    {
-      id: 2,
-      type: 'spent',
-      amount: 500,
-      description: 'Redeemed: 30% discount code for Temu',
-      date: '2024-07-26',
-      category: 'Reward'
-    },
-    {
-      id: 3,
-      type: 'earned',
-      amount: 150,
-      description: 'Daily check-in bonus',
-      date: '2024-07-26',
-      category: 'Bonus'
-    },
-    {
-      id: 4,
-      type: 'spent',
-      amount: 800,
-      description: 'Redeemed: Free Coffee Voucher (Starbucks)',
-      date: '2024-07-25',
-      category: 'Reward'
-    },
-    {
-      id: 5,
-      type: 'earned',
-      amount: 200,
-      description: 'Mission completed: Use public transportation',
-      date: '2024-07-24',
-      category: 'Mission'
-    },
-    {
-      id: 6,
-      type: 'earned',
-      amount: 75,
-      description: 'Mission completed: Recycle plastic bottles',
-      date: '2024-07-23',
-      category: 'Mission'
-    }
-  ];
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const [creditResult, transactionResult] = await Promise.all([
+          getCarbonCreditBalance(),
+          getCarbonCreditTransactions(),
+        ]);
+        setCreditData(creditResult);
+        setTransactionData(transactionResult);
+      } catch (error) {
+        console.error("데이터 로드 실패:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   const handleBackClick = () => {
     vibrate({ duration: 100 });
     navigate(-1);
   };
 
-  const filteredTransactions = transactions.filter(transaction => {
-    if (filter === 'all') return true;
+  const transactions = transactionData?.transactions || [];
+
+  const filteredTransactions = transactions.filter((transaction) => {
+    if (filter === "all") return true;
     return transaction.type === filter;
   });
 
-  const totalEarned = transactions
-    .filter(t => t.type === 'earned')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const totalEarned = creditData?.totalEarned || 0;
+  const totalSpent = creditData?.totalSpent || 0;
 
-  const totalSpent = transactions
-    .filter(t => t.type === 'spent')
-    .reduce((sum, t) => sum + t.amount, 0);
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -96,33 +82,39 @@ const CreditUsageHistoryPage: React.FC = () => {
           >
             <HiChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
-          <h1 className="text-2xl font-bold text-gray-800">Credit Usage History</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Credit Usage History
+          </h1>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-green-50 border border-green-100 rounded-lg p-4 text-center">
-            <p className="text-2xl font-bold text-green-600">{totalEarned.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-green-600">
+              {totalEarned.toLocaleString()}
+            </p>
             <p className="text-sm text-gray-600">Total Earned</p>
           </div>
           <div className="bg-red-50 border border-red-100 rounded-lg p-4 text-center">
-            <p className="text-2xl font-bold text-red-600">{totalSpent.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-red-600">
+              {totalSpent.toLocaleString()}
+            </p>
             <p className="text-sm text-gray-600">Total Spent</p>
           </div>
         </div>
 
         <div className="flex space-x-2">
           {[
-            { id: 'all', label: 'All' },
-            { id: 'earned', label: 'Earned' },
-            { id: 'spent', label: 'Spent' }
+            { id: "all", label: "All" },
+            { id: "EARNED", label: "Earned" },
+            { id: "SPENT", label: "Spent" },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setFilter(tab.id as any)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 filter === tab.id
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
               {tab.label}
@@ -141,15 +133,15 @@ const CreditUsageHistoryPage: React.FC = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                      transaction.type === 'earned' 
-                        ? 'bg-green-100' 
-                        : 'bg-red-100'
-                    }`}>
-                      {transaction.type === 'earned' ? (
-                        <HiPlus className={`w-4 h-4 ${
-                          transaction.type === 'earned' ? 'text-green-600' : 'text-red-600'
-                        }`} />
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                        transaction.type === "EARNED"
+                          ? "bg-green-100"
+                          : "bg-red-100"
+                      }`}
+                    >
+                      {transaction.type === "EARNED" ? (
+                        <HiPlus className="w-4 h-4 text-green-600" />
                       ) : (
                         <HiMinus className="w-4 h-4 text-red-600" />
                       )}
@@ -160,22 +152,34 @@ const CreditUsageHistoryPage: React.FC = () => {
                       </h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                          {transaction.category}
+                          {transaction.sourceType}
                         </span>
                         <span className="text-xs text-gray-500">
-                          {transaction.date}
+                          {formatDate(transaction.createdAt)}
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            transaction.status === "PENDING"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {transaction.status}
                         </span>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className={`font-bold text-lg ${
-                    transaction.type === 'earned' 
-                      ? 'text-green-600' 
-                      : 'text-red-600'
-                  }`}>
-                    {transaction.type === 'earned' ? '+' : '-'}{transaction.amount}
+                  <span
+                    className={`font-bold text-lg ${
+                      transaction.type === "EARNED"
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {transaction.type === "EARNED" ? "+" : "-"}
+                    {transaction.amount}
                   </span>
                   <p className="text-xs text-gray-500">points</p>
                 </div>

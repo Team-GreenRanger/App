@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAndroidApi } from '../hooks';
-import { HiChevronLeft, HiOutlineSparkles } from 'react-icons/hi';
-import { Tabs } from '../components';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAndroidApi } from "../hooks";
+import { HiChevronLeft, HiOutlineSparkles } from "react-icons/hi";
+import { Tabs } from "../components";
+import { getCarbonCreditBalance } from "../utils/carbon-credit.utils";
 
 interface Reward {
   id: number;
@@ -15,65 +16,72 @@ interface Reward {
 const RewardShopPage: React.FC = () => {
   const navigate = useNavigate();
   const { vibrate, showToast } = useAndroidApi();
-  const [activeTab, setActiveTab] = useState('temu');
+  const [activeTab, setActiveTab] = useState("temu");
+  const [balance, setBalance] = useState(0);
 
-  const userPoints = 4400;
+  useEffect(() => {
+    const loadData = async () => {
+      const creditData = await getCarbonCreditBalance();
+      setBalance(creditData.balance);
+    };
+    loadData();
+  }, []);
 
   const tabs = [
-    { id: 'temu', label: 'Temu' },
-    { id: 'starbucks', label: 'Starbucks' },
-    { id: 'aliexpress', label: 'Aliexpress' }
+    { id: "temu", label: "Temu" },
+    { id: "starbucks", label: "Starbucks" },
+    { id: "aliexpress", label: "Aliexpress" },
   ];
 
   const rewards: Record<string, Reward[]> = {
     temu: [
       {
         id: 1,
-        title: '30% discount code for Temu',
+        title: "30% discount code for Temu",
         points: 500,
-        discount: '30%',
-        canRedeem: true
+        discount: "30%",
+        canRedeem: true,
       },
       {
         id: 2,
-        title: '90% discount code for Temu',
+        title: "90% discount code for Temu",
         points: 5000,
-        discount: '90%',
-        canRedeem: false
-      }
+        discount: "90%",
+        canRedeem: false,
+      },
     ],
     starbucks: [
       {
         id: 3,
-        title: 'Free Coffee Voucher',
+        title: "Free Coffee Voucher",
         points: 800,
-        discount: 'Free',
-        canRedeem: true
+        discount: "Free",
+        canRedeem: true,
       },
       {
         id: 4,
-        title: '50% off any drink',
+        title: "50% off any drink",
         points: 1200,
-        discount: '50%',
-        canRedeem: true
-      }
+        discount: "50%",
+        canRedeem: true,
+      },
     ],
     aliexpress: [
       {
         id: 5,
-        title: '$5 off coupon',
+        title: "$5 off coupon",
         points: 600,
-        discount: '$5',
-        canRedeem: true
+        discount: "$5",
+        canRedeem: true,
       },
       {
         id: 6,
-        title: '$20 off coupon',
+        title: "$20 off coupon",
         points: 2000,
-        discount: '$20',
-        canRedeem: true
-      }
-    ]
+        discount: "$20",
+        canRedeem: true,
+      },
+    ],
   };
 
   const handleBackClick = () => {
@@ -83,12 +91,14 @@ const RewardShopPage: React.FC = () => {
 
   const handlePurchase = (reward: Reward) => {
     vibrate({ duration: 100 });
-    if (reward.canRedeem && userPoints >= reward.points) {
-      showToast({ message: `Successfully purchased ${reward.title}! Check My Rewards to use it.` });
-    } else if (userPoints < reward.points) {
-      showToast({ message: 'Not enough points to purchase this reward' });
+    if (reward.canRedeem && balance >= reward.points) {
+      showToast({
+        message: `Successfully purchased ${reward.title}! Check My Rewards to use it.`,
+      });
+    } else if (balance < reward.points) {
+      showToast({ message: "Not enough points to purchase this reward" });
     } else {
-      showToast({ message: 'This reward is currently unavailable' });
+      showToast({ message: "This reward is currently unavailable" });
     }
   };
 
@@ -109,15 +119,13 @@ const RewardShopPage: React.FC = () => {
           </div>
           <div className="flex items-center">
             <HiOutlineSparkles className="w-5 h-5 text-green-500 mr-2" />
-            <span className="text-lg font-bold text-green-600">{userPoints.toLocaleString()}</span>
+            <span className="text-lg font-bold text-green-600">
+              {balance.toLocaleString()}
+            </span>
           </div>
         </div>
 
-        <Tabs 
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
+        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
       <div className="px-4 pb-20 pt-4">
@@ -132,24 +140,26 @@ const RewardShopPage: React.FC = () => {
                   {reward.title}
                 </h3>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-green-600">
                   {reward.points} point
                 </span>
-                
+
                 <button
                   onClick={() => handlePurchase(reward)}
-                  disabled={!reward.canRedeem || userPoints < reward.points}
+                  disabled={!reward.canRedeem || balance < reward.points}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    reward.canRedeem && userPoints >= reward.points
-                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    reward.canRedeem && balance >= reward.points
+                      ? "bg-blue-500 hover:bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-500 cursor-not-allowed"
                   }`}
                 >
-                  {!reward.canRedeem ? 'Unavailable' : 
-                   userPoints < reward.points ? 'Not enough points' : 
-                   'Purchase'}
+                  {!reward.canRedeem
+                    ? "Unavailable"
+                    : balance < reward.points
+                    ? "Not enough points"
+                    : "Purchase"}
                 </button>
               </div>
             </div>
@@ -158,7 +168,9 @@ const RewardShopPage: React.FC = () => {
 
         {currentRewards.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No rewards available for {activeTab}</p>
+            <p className="text-gray-500">
+              No rewards available for {activeTab}
+            </p>
           </div>
         )}
       </div>

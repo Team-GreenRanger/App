@@ -1,11 +1,21 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAndroidApi } from "../hooks";
 import { HiChevronLeft, HiOutlineSparkles } from "react-icons/hi";
+import { getCarbonCreditBalance } from "../utils/carbon-credit.utils";
 
 const MyCarbonCreditPage: React.FC = () => {
   const navigate = useNavigate();
   const { vibrate } = useAndroidApi();
+  const [balance, setBalance] = useState(0);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const creditData = await getCarbonCreditBalance();
+      setBalance(creditData.balance);
+    };
+    loadData();
+  }, []);
 
   const handleBackClick = () => {
     vibrate({ duration: 100 });
@@ -62,7 +72,7 @@ const MyCarbonCreditPage: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center mb-2">
             <HiOutlineSparkles className="w-6 h-6 text-green-500 mr-2" />
-            <span className="text-2xl font-bold text-green-600">4,400</span>
+            <span className="text-2xl font-bold text-green-600">{balance}</span>
           </div>
           <p className="text-gray-600">Available points to use</p>
         </div>
