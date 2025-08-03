@@ -1,6 +1,7 @@
-export * from './android-bridge.types';
-export * from './user.types';
-export * from './ranking.types';
+export * from "./android-bridge.types";
+export * from "./user.types";
+export * from "./ranking.types";
+export * from "./ai.types";
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -16,7 +17,7 @@ export interface LoadingState {
 
 export interface AppConfig {
   version: string;
-  environment: 'development' | 'production';
+  environment: "development" | "production";
   features: {
     vibration: boolean;
     notifications: boolean;

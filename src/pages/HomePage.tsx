@@ -6,19 +6,20 @@ import {
   EcoTipCard,
   LearnMoreCard,
   NotificationCenter,
+  AiButton,
 } from "../components";
 import { useAndroidApi } from "../hooks";
 import { privateApi } from "../api";
-import { UserProfile, UserStatistics } from "../types";
+import { UserProfile, UserStatistics, EcoTip } from "../types";
 import { HiSparkles, HiGlobeAlt } from "react-icons/hi";
-import AiButton from "../components/AiButton";
 
-const HomePage: React.FC = () => {
+const HomePage = () => {
   const { updateBottomNavigation, showToast } = useAndroidApi();
   const navigate = useNavigate();
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [statistics, setStatistics] = useState<UserStatistics | null>(null);
+  const [ecoTip, setEcoTip] = useState<EcoTip | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -29,13 +30,16 @@ const HomePage: React.FC = () => {
   const loadUserData = async () => {
     try {
       setIsLoading(true);
-      const [profileResponse, statsResponse] = await Promise.all([
-        privateApi.get<UserProfile>("/users/profile"),
-        privateApi.get<UserStatistics>("/users/statistics"),
-      ]);
+      const [profileResponse, statsResponse, ecoTipResponse] =
+        await Promise.all([
+          privateApi.get<UserProfile>("/users/profile"),
+          privateApi.get<UserStatistics>("/users/statistics"),
+          privateApi.get<EcoTip>("/ai/eco-tip"),
+        ]);
 
       setProfile(profileResponse.data);
       setStatistics(statsResponse.data);
+      setEcoTip(ecoTipResponse.data);
     } catch (error) {
       console.error("홈페이지 데이터 로드 실패:", error);
     } finally {
@@ -49,6 +53,7 @@ const HomePage: React.FC = () => {
 
   const handleStartLearning = () => {
     showToast({ message: "학습 프로그램을 시작합니다!" });
+    navigate("/education");
   };
 
   const handleNotificationClick = () => {
@@ -129,7 +134,7 @@ const HomePage: React.FC = () => {
         <div className="space-y-4">
           <EcoTipCard
             title="Today's Eco Tips"
-            description="Unplug Electronic devices when not in use. Unplugging unused electronics can save about 50 kg of CO₂ annually and reduced your energy bill!"
+            description={ecoTip?.tip || "Loading eco tip..."}
             icon={<HiSparkles className="w-6 h-6 text-blue-600" />}
           />
 
