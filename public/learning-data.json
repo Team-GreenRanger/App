@@ -1,0 +1,114 @@
+{
+  "categories": {
+    "climate-change": {
+      "id": "climate-change",
+      "title": "Learn about Climate Change",
+      "description": "Understand the science, causes, and impacts of climate change through comprehensive educational content.",
+      "topics": [
+        {
+          "id": "what-is-climate-change",
+          "title": "What is Climate Change?",
+          "description": "Learn the fundamental science behind climate change and global warming",
+          "content": "Climate change is a long-term shift in global temperatures and weather patterns. While climate changes are natural, scientific evidence shows that human activities have been the main driver since the 1800s.\n\nThe burning of fossil fuels like coal, oil and gas releases greenhouse gases into our atmosphere. These gases trap heat from the sun, causing Earth's temperature to rise. This is called the greenhouse effect.\n\nSince the Industrial Revolution, global temperatures have risen by about 1.1°C (2°F). This might sound small, but it has huge impacts on our planet's climate systems, weather patterns, and ecosystems.\n\nClimate change affects everyone, everywhere. Rising sea levels threaten coastal cities, changing rainfall patterns affect farming, and extreme weather events are becoming more common and severe.",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "article"
+        },
+        {
+          "id": "greenhouse-effect",
+          "title": "The Greenhouse Effect",
+          "description": "How greenhouse gases warm our planet",
+          "content": "The greenhouse effect is like a blanket around Earth. When sunlight hits our planet, some energy bounces back to space, but greenhouse gases in the atmosphere trap some of this heat, keeping Earth warm enough for life.\n\nWithout the natural greenhouse effect, Earth would be about 33°C colder - too cold for most life! The problem is that human activities are adding extra greenhouse gases, making this 'blanket' thicker and trapping more heat.\n\nThe main greenhouse gases are:\n• Carbon dioxide (CO2) - from burning fossil fuels\n• Methane (CH4) - from agriculture and waste\n• Nitrous oxide (N2O) - from fertilizers and industry\n• Fluorinated gases - from refrigeration and industry\n\nCarbon dioxide is the most important because we produce so much of it. Every time we burn coal, oil, or gas for electricity, heat, or transportation, we release CO2 into the atmosphere.",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "article"
+        },
+        {
+          "id": "causes-of-climate-change",
+          "title": "What Causes Climate Change?",
+          "description": "The main human activities driving global warming",
+          "content": "Climate change is primarily caused by human activities that release greenhouse gases into the atmosphere. Here are the main sources:\n\n**Energy Production (25% of emissions)**\nBurning coal, oil, and gas to generate electricity and heat for our homes, buildings, and industry.\n\n**Agriculture & Land Use (24% of emissions)**\nClearing forests for farmland, raising livestock (especially cattle), and growing rice in flooded fields.\n\n**Industry (21% of emissions)**\nManufacturing goods like steel, cement, and chemicals. Many industrial processes release greenhouse gases.\n\n**Transportation (14% of emissions)**\nCars, trucks, ships, and airplanes that burn fossil fuels to move people and goods around the world.\n\n**Buildings (6% of emissions)**\nHeating and cooling our homes and offices, plus the energy used by appliances and lighting.\n\n**Other Energy Uses (10% of emissions)**\nFuel used for purposes other than electricity, like heating homes with gas or oil.\n\nThe good news is that we know what causes climate change, so we can work on solutions!",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "article"
+        },
+        {
+          "id": "climate-impacts",
+          "title": "How Climate Change Affects Us",
+          "description": "The impacts of climate change on people and nature",
+          "content": "Climate change is already affecting people and nature around the world. Here's how:\n\n**Rising Temperatures**\nHeatwaves are becoming more frequent and intense. This is dangerous for human health, especially for elderly people and those with medical conditions.\n\n**Changing Weather Patterns**\nSome places are getting more rain and flooding, while others face severe droughts. This makes it harder to grow food and can damage homes and infrastructure.\n\n**Rising Sea Levels**\nAs ice sheets melt and ocean water expands from warming, sea levels rise. This threatens coastal communities and small island nations.\n\n**Effects on Nature**\nAnimals and plants are struggling to adapt. Polar bears lose sea ice habitat, coral reefs bleach and die, and many species must migrate to survive.\n\n**Impact on People**\nClimate change affects food security, water availability, and human health. It can force people to leave their homes and can increase conflicts over resources.\n\n**Economic Costs**\nExtreme weather damages infrastructure, affects agriculture, and costs billions of dollars in recovery efforts.\n\nBut there's hope! By acting now, we can reduce these impacts and adapt to changes that are already happening.",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "article"
+        },
+        {
+          "id": "renewable-energy",
+          "title": "Clean Energy Solutions",
+          "description": "How renewable energy can help fight climate change",
+          "content": "Renewable energy comes from natural sources that don't run out, like sunlight, wind, and water. Unlike fossil fuels, renewable energy produces little or no greenhouse gas emissions.\n\n**Solar Power**\nSolar panels convert sunlight directly into electricity. Solar energy is now the cheapest form of electricity in many parts of the world!\n\n**Wind Power**\nWind turbines use moving air to generate electricity. Wind farms can be built on land or offshore in the ocean.\n\n**Hydroelectric Power**\nDams and other systems use flowing water to generate electricity. This is one of the oldest forms of renewable energy.\n\n**Other Renewable Sources**\n• Geothermal energy uses heat from inside the Earth\n• Biomass energy comes from plants and organic waste\n• Tidal energy harnesses the power of ocean tides\n\n**Benefits of Renewable Energy**\n• Reduces greenhouse gas emissions\n• Creates jobs in new industries\n• Improves air quality and public health\n• Provides energy security and independence\n• Costs are falling rapidly\n\nTransitioning to renewable energy is one of the most important steps we can take to address climate change. Many countries are already making this transition!",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "article"
+        },
+        {
+          "id": "what-can-you-do",
+          "title": "What You Can Do",
+          "description": "Simple actions everyone can take to help fight climate change",
+          "content": "Everyone can help fight climate change! Here are simple actions that make a real difference:\n\n**At Home**\n• Use LED light bulbs - they use 75% less energy\n• Unplug electronics when not in use\n• Set your thermostat a few degrees lower in winter, higher in summer\n• Choose renewable energy if available in your area\n\n**Transportation**\n• Walk, bike, or use public transportation when possible\n• Combine errands into one trip\n• Choose fuel-efficient vehicles\n• Consider electric or hybrid cars\n\n**Food Choices**\n• Eat less meat, especially beef\n• Choose local and seasonal foods\n• Reduce food waste by planning meals\n• Start a compost bin for food scraps\n\n**Reduce, Reuse, Recycle**\n• Buy only what you need\n• Repair items instead of replacing them\n• Recycle paper, plastic, glass, and metal\n• Choose products with less packaging\n\n**Get Involved**\n• Learn about climate change and share with others\n• Support businesses that care about the environment\n• Vote for leaders who take climate action seriously\n• Join local environmental groups\n\nRemember: small actions add up when millions of people do them together!",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "guide"
+        }
+      ]
+    },
+    "extreme-weather": {
+      "id": "extreme-weather",
+      "title": "Extreme Weather Preparedness",
+      "description": "Learn how to prepare for and respond to extreme weather events.",
+      "topics": [
+        {
+          "id": "heat-waves",
+          "title": "Staying Safe in Heat Waves",
+          "description": "How to protect yourself during dangerous hot weather",
+          "content": "Heat waves are periods of unusually hot weather that can be dangerous to your health. Climate change is making heat waves happen more often and making them hotter.\n\n**Why Heat Waves Are Dangerous**\nYour body works hard to stay cool, but extreme heat can overwhelm your natural cooling system. This can lead to heat exhaustion or heat stroke, which can be life-threatening.\n\n**Warning Signs of Heat Illness**\n• Heavy sweating or no sweating at all\n• Nausea and vomiting\n• Headache and dizziness\n• Confusion or feeling faint\n• High body temperature\n\n**How to Stay Safe**\n• Stay indoors during the hottest part of the day (10 AM to 6 PM)\n• Drink plenty of water, even if you don't feel thirsty\n• Wear loose, light-colored clothing\n• Take cool showers or baths\n• Use fans or air conditioning\n• Never leave children or pets in cars\n\n**Help Others Stay Safe**\n• Check on elderly neighbors and relatives\n• Know where cooling centers are in your community\n• Learn the signs of heat illness\n• Call for medical help if someone shows signs of heat stroke\n\n**Be Prepared**\n• Have a plan for staying cool if the power goes out\n• Keep extra water on hand\n• Know where to go for air conditioning if you don't have it at home",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "guide"
+        },
+        {
+          "id": "flooding",
+          "title": "Flood Safety and Preparedness",
+          "description": "How to stay safe before, during, and after floods",
+          "content": "Floods are the most common natural disaster. They can happen anywhere, anytime - even in areas that don't usually flood. Climate change is making floods more common and more severe.\n\n**Types of Floods**\n• Flash floods happen quickly with little warning\n• River floods develop slowly as rivers overflow\n• Storm surge floods occur during hurricanes\n• Urban floods happen when city drains can't handle heavy rain\n\n**Before a Flood**\n• Know your area's flood risk\n• Make an emergency plan with your family\n• Put together an emergency kit\n• Keep important documents in a waterproof container\n• Consider flood insurance (regular insurance doesn't cover floods)\n\n**Emergency Kit Essentials**\n• Water (1 gallon per person per day for 3 days)\n• Non-perishable food for 3 days\n• Battery-powered radio\n• Flashlights and extra batteries\n• First aid kit\n• Medications\n• Cell phone charger\n• Cash in small bills\n\n**During a Flood**\n• Move to higher ground immediately\n• NEVER walk or drive through flood water\n• Just 6 inches of moving water can knock you down\n• 12 inches of water can carry away a car\n• Stay away from electrical lines and equipment\n\n**After a Flood**\n• Don't return home until authorities say it's safe\n• Avoid flood water - it may contain sewage or chemicals\n• Take pictures of damage for insurance\n• Throw away food that touched flood water\n• Clean and disinfect everything that got wet",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "guide"
+        },
+        {
+          "id": "hurricanes",
+          "title": "Hurricane Preparedness",
+          "description": "How to prepare for and survive hurricanes",
+          "content": "Hurricanes are powerful storms with strong winds, heavy rain, and storm surge. Climate change is making hurricanes stronger and wetter, which makes them more dangerous.\n\n**Understanding Hurricanes**\nHurricanes are categorized by wind speed:\n• Category 1: 74-95 mph winds\n• Category 2: 96-110 mph winds\n• Category 3: 111-129 mph winds (major hurricane)\n• Category 4: 130-156 mph winds (major hurricane)\n• Category 5: 157+ mph winds (major hurricane)\n\n**Hurricane Season Preparation**\n• Make a family emergency plan\n• Know your evacuation zone and routes\n• Assemble emergency supplies\n• Review your insurance coverage\n• Trim trees around your home\n• Install storm shutters or have plywood ready\n\n**When a Hurricane is Coming**\n• Monitor weather reports closely\n• Charge all electronic devices\n• Fill bathtubs with water\n• Bring outdoor furniture inside\n• Fill your car's gas tank\n• Get cash from the ATM\n• Follow evacuation orders immediately\n\n**During the Hurricane**\n• Stay indoors and away from windows\n• Don't go outside during the 'eye' of the storm\n• Use flashlights, not candles\n• Listen to emergency radio for updates\n• Stay in the strongest part of your home\n\n**Storm Surge is the Deadliest Part**\nStorm surge is a wall of ocean water pushed ashore by hurricane winds. It can be 20 feet high and is responsible for 90% of hurricane deaths. If you're told to evacuate, GO!",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "guide"
+        },
+        {
+          "id": "winter-storms",
+          "title": "Winter Storm Safety",
+          "description": "Preparing for blizzards, ice storms, and extreme cold",
+          "content": "Winter storms bring snow, ice, wind, and dangerously cold temperatures. These storms can knock out power, make travel impossible, and create life-threatening conditions.\n\n**Types of Winter Storms**\n• Blizzards have heavy snow and strong winds\n• Ice storms coat everything in a layer of ice\n• Freezing rain creates slippery, dangerous conditions\n• Extreme cold can be dangerous even without precipitation\n\n**Preparing Your Home**\n• Insulate pipes so they don't freeze and burst\n• Have your heating system checked every year\n• Install carbon monoxide detectors\n• Keep extra blankets and warm clothes\n• Stock up on food and water\n• Have a backup heating plan\n\n**Winter Car Kit**\n• Blankets or sleeping bags\n• Extra warm clothing\n• High-energy snacks\n• Water\n• Ice scraper and snow brush\n• Small shovel\n• Jumper cables\n• Emergency flares\n• Cat litter or sand for traction\n\n**If You Lose Power**\n• Close off rooms you don't need\n• Wear layers of loose, light clothing\n• Stay together to share body heat\n• Drink warm beverages\n• Exercise to keep warm\n• NEVER use camping stoves, grills, or generators indoors - they produce deadly carbon monoxide\n\n**Recognizing Hypothermia**\nWhen your body temperature drops too low:\n• Shivering (early warning sign)\n• Confusion and drowsiness\n• Slurred speech\n• Loss of coordination\nGet medical help immediately if you see these signs!",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "guide"
+        },
+        {
+          "id": "wildfires",
+          "title": "Wildfire Safety",
+          "description": "Protecting yourself and your home from wildfires",
+          "content": "Wildfires are uncontrolled fires that spread quickly through forests, grasslands, and communities. Climate change is making fire seasons longer and more intense.\n\n**Why Wildfires Are Getting Worse**\n• Hotter temperatures dry out vegetation\n• Droughts create more fuel for fires\n• Earlier snowmelt extends fire season\n• Dead trees from bark beetle infestations burn easily\n\n**Protecting Your Home**\n• Create 'defensible space' by clearing brush and dead plants within 30 feet\n• Use fire-resistant plants in your landscaping\n• Keep gutters clean of leaves and debris\n• Install ember-resistant vents\n• Use fire-resistant roofing materials\n• Store firewood away from your house\n\n**Evacuation Planning**\n• Know multiple ways to leave your neighborhood\n• Practice your evacuation plan\n• Keep important documents together\n• Have emergency supplies ready to grab\n• Plan for pets and livestock\n• Register for emergency alerts\n\n**If You're Caught in a Wildfire**\n• Call 911 and give your location\n• Stay in a cleared area if possible\n• Lie face down and cover yourself with soil\n• Stay low and cover nose and mouth\n• Don't try to outrun a fire uphill - fires move faster uphill\n\n**Wildfire Smoke Health**\nWildfire smoke can travel hundreds of miles and is dangerous to breathe:\n• Stay indoors with windows and doors closed\n• Use air purifiers if you have them\n• Avoid outdoor exercise\n• Wear N95 masks if you must go outside\n• Create a 'clean room' in your house\n\nPeople with asthma, heart disease, or lung disease are especially at risk from smoke.",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "guide"
+        },
+        {
+          "id": "severe-thunderstorms",
+          "title": "Severe Thunderstorm Safety",
+          "description": "How to stay safe during dangerous thunderstorms",
+          "content": "Thunderstorms can produce damaging winds, large hail, flash floods, and tornadoes. Climate change is making thunderstorms more intense with heavier rainfall.\n\n**Signs of Severe Weather**\n• Dark, towering clouds\n• Large hail\n• Strong winds that change direction\n• Loud thunder and frequent lightning\n• Heavy rain that reduces visibility\n\n**Lightning Safety**\nLightning kills about 50 people in the US each year:\n• Go indoors immediately when you hear thunder\n• Stay away from windows, doors, and electrical equipment\n• Don't use phones connected to walls\n• Avoid plumbing - don't shower or wash dishes\n• If you're outside, avoid tall objects like trees\n• Never shelter under isolated trees\n• Get out of water immediately\n\n**Hail Protection**\nHail can be as large as softballs and cause serious injury:\n• Get indoors immediately\n• Stay away from windows and glass doors\n• Cover your head if caught outside\n• Protect your car by parking in a garage\n• Don't drive in hail - pull over and wait\n\n**Flash Flood Safety**\nThunderstorms can produce flash floods very quickly:\n• Never drive through flooded roads\n• Move to higher ground if water is rising\n• Stay out of storm drains and ditches\n• Be especially careful at night when it's hard to see\n\n**The 30-30 Rule**\nWhen you see lightning, count the seconds until you hear thunder, then divide by 5. That's how many miles away the lightning is. If it's less than 6 miles (30 seconds), take shelter immediately. Wait 30 minutes after the last thunder before going back outside.",
+          "imageUrl": "/src/assets/images/climate change.svg",
+          "type": "guide"
+        }
+      ]
+    }
+  }
+}

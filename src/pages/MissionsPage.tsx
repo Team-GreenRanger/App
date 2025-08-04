@@ -1,15 +1,86 @@
 import React, { useEffect, useState } from "react";
-import { useAndroidApi, useMissions } from "../hooks";
+import { useAndroidApi } from "../hooks";
 import { Tabs, MissionCard } from "../components";
 import { useNavigate } from "react-router-dom";
-import { UserMission } from "../types";
 import { AlertCircle } from "lucide-react";
+import { missionApi } from "../api/missionApi";
+
+// 실제 API 응답 구조에 맞춘 타입 정의
+interface Mission {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  difficulty: string;
+  co2ReductionAmount: string;
+  creditReward: number;
+  requiredSubmissions: number;
+  imageUrl: string;
+  instructions: string[];
+  verificationCriteria: string[];
+  status: string;
+  createdAt: string;
+}
+
+interface MissionData {
+  isActive: boolean;
+  isDone: boolean;
+  progressPercentage: number | null;
+  remainingSubmissions: number | null;
+  mission: Mission;
+}
+
+interface ApiResponse {
+  missions: MissionData[];
+  summary: {
+    totalMissions: number;
+    completedMissions: number;
+    activeMissions: number;
+    pendingMissions: number;
+    completionRate: number;
+  };
+}
 
 const MissionsPage: React.FC = () => {
   const { updateBottomNavigation, showToast, vibrate } = useAndroidApi();
-  const { userMissions, isLoading, error, loadUserMissions, loadDailyMissions } = useMissions();
+  const [missions, setMissions] = useState<MissionData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("active");
   const navigate = useNavigate();
+
+  // API 데이터 로드 함수
+  const loadMissions = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // 실제 API 호출
+      const response = await missionApi.getUserMissions();
+      
+      // API 응답이 제공해주신 구조라고 가정
+      // response가 { missions: [], summary: {} } 구조인지 확인
+      let missions: MissionData[];
+      
+      if (Array.isArray(response)) {
+        // response가 배열이면 그대로 사용
+        missions = response;
+      } else if (response && Array.isArray(response.missions)) {
+        // response가 { missions: [], summary: {} } 구조면 missions 배열 사용
+        missions = response.missions;
+      } else {
+        // 예상치 못한 구조
+        throw new Error('예상치 못한 API 응답 구조');
+      }
+      
+      setMissions(missions);
+    } catch (err) {
+      setError('미션 데이터를 불러오는데 실패했습니다.');
+      console.error('Mission loading error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const tabs = [
     { id: "active", label: "Active" },
@@ -18,28 +89,26 @@ const MissionsPage: React.FC = () => {
 
   useEffect(() => {
     updateBottomNavigation("missions");
-    // 사용자 미션과 일일 미션 로드
-    loadUserMissions();
-    loadDailyMissions();
-  }, [updateBottomNavigation, loadUserMissions, loadDailyMissions]);
+    loadMissions();
+  }, [updateBottomNavigation]);
 
-  const handleCameraClick = (userMission: UserMission) => {
+  const handleCameraClick = (missionData: MissionData) => {
     vibrate({ duration: 100 });
-    showToast({ message: "Camera opened for mission verification!" });
+    showToast({ message: "카메라가 열렸습니다!" });
     
     // URL 파라미터로 missionId 전달
-    navigate(`/camera/${userMission.missionId}`, {
+    navigate(`/camera/${missionData.mission.id}`, {
       state: {
-        userMissionId: userMission.id,
-        missionTitle: userMission.mission.title,
-        remainingSubmissions: userMission.remainingSubmissions
+        missionId: missionData.mission.id,
+        missionTitle: missionData.mission.title,
+        remainingSubmissions: missionData.remainingSubmissions
       }
     });
   };
 
   // isActive와 isDone 사용해서 미션 구분
-  const activeMissions = userMissions.filter(um => um.isActive);
-  const doneMissions = userMissions.filter(um => um.isDone);
+  const activeMissions = missions.filter(m => m.isActive && !m.isDone);
+  const doneMissions = missions.filter(m => m.isDone);
   
   const currentMissions = activeTab === "active" ? activeMissions : doneMissions;
 
@@ -55,7 +124,15 @@ const MissionsPage: React.FC = () => {
         {error && (
           <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 mb-4">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <p className="text-sm">{error}</p>
+            <div className="flex-1">
+              <p className="text-sm">{error}</p>
+              <button 
+                onClick={loadMissions}
+                className="text-xs text-red-600 underline mt-1"
+              >
+                다시 시도
+              </button>
+            </div>
           </div>
         )}
 
@@ -67,21 +144,11 @@ const MissionsPage: React.FC = () => {
         ) : (
           <>
             <div className="space-y-0">
-              {currentMissions.map((userMission, index) => (
+              {currentMissions.map((missionData, index) => (
                 <MissionCard
-                  key={userMission.id || index}
-                  title={userMission.mission.title}
-                  description={userMission.mission.description}
-                  co2Amount={`${userMission.mission.co2ReductionAmount}kg CO2`}
-                  creditReward={userMission.mission.creditReward}
-                  difficulty={userMission.mission.difficulty}
-                  current={userMission.currentProgress}
-                  total={userMission.targetProgress}
-                  progressPercentage={userMission.progressPercentage}
-                  remainingSubmissions={userMission.remainingSubmissions}
-                  isCompleted={userMission.isDone}
-                  status={userMission.status}
-                  onCameraClick={() => handleCameraClick(userMission)}
+                  key={missionData.mission.id || index}
+                  missionData={missionData}
+                  onCameraClick={() => handleCameraClick(missionData)}
                 />
               ))}
             </div>

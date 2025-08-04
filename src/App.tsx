@@ -28,8 +28,7 @@ import AiChatPage from "./pages/AiChatPage";
 import AiWelcome from "./components/AiWelcomeSection";
 import AiWelcomeSection from "./components/AiWelcomeSection";
 import EducationPage from "./pages/EducationPage";
-import LearnClimateChange from "./pages/LearnClimateChange";
-import LearnExtremeWeather from "./pages/LearnExtremeWeather";
+import LearningPageViewer from "./pages/LearningPageViewer";
 import LearningPage from "./pages/LearningPage";
 import CameraPage from "./pages/CameraPage";
 import MissionCompletePage from "./pages/MissionCompletePage";
@@ -186,13 +185,21 @@ const App: React.FC = () => {
           <Route path="/education" element={<EducationPage />} />
           <Route
             path="/education/climate-change"
-            element={<LearnClimateChange />}
+            element={<LearningPageViewer categoryId="climate-change" />}
           />
           <Route
             path="/education/extreme-weather"
-            element={<LearnExtremeWeather />}
+            element={<LearningPageViewer categoryId="extreme-weather" />}
           />
-          <Route path="/education/learnig-page" element={<LearningPage />} />
+          <Route
+            path="/education/climate-change/:topicId"
+            element={<LearningPageViewer categoryId="climate-change" />}
+          />
+          <Route
+            path="/education/extreme-weather/:topicId"
+            element={<LearningPageViewer categoryId="extreme-weather" />}
+          />
+          <Route path="/education/learning-page" element={<LearningPage />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
 
