@@ -4,9 +4,10 @@ import confetti from "../assets/images/Conffeti.svg";
 interface MissionCompleteProps {
   isFullyComplete?: boolean;
   points?: number;
+  missionTitle?: string;
 }
 
-const MissionComplete = ({ isFullyComplete, points }: MissionCompleteProps) => {
+const MissionComplete = ({ isFullyComplete, points, missionTitle }: MissionCompleteProps) => {
   return (
     <div className="flex flex-col items-center justify-center px-8">
       <div className="mb-8">
@@ -17,6 +18,10 @@ const MissionComplete = ({ isFullyComplete, points }: MissionCompleteProps) => {
 
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">Well done!</h1>
+        
+        {missionTitle && (
+          <p className="text-lg font-medium text-gray-700 mb-4">{missionTitle}</p>
+        )}
 
         {isFullyComplete ? (
           <div className="space-y-2">

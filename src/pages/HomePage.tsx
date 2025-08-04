@@ -29,15 +29,22 @@ const HomePage: React.FC = () => {
   const loadUserData = async () => {
     try {
       setIsLoading(true);
+      console.log('API 호출 시작...');
+      
       const [profileResponse, statsResponse] = await Promise.all([
         privateApi.get<UserProfile>("/users/profile"),
         privateApi.get<UserStatistics>("/users/statistics"),
       ]);
 
+      console.log('Profile 응답:', profileResponse.data);
+      console.log('Statistics 응답:', statsResponse.data);
+      
       setProfile(profileResponse.data);
       setStatistics(statsResponse.data);
     } catch (error) {
       console.error("홈페이지 데이터 로드 실패:", error);
+      console.error("에러 상세:", error.response?.data);
+      console.error("상태 코드:", error.response?.status);
     } finally {
       setIsLoading(false);
     }
@@ -67,6 +74,10 @@ const HomePage: React.FC = () => {
   const getWeeklyTreesPlanted = () => {
     return Math.floor(getTreesPlanted() * 0.3);
   };
+
+  console.log('Profile 상태:', profile);
+  console.log('Statistics 상태:', statistics);
+  console.log('Loading 상태:', isLoading);
 
   if (isLoading) {
     return (

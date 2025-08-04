@@ -1,6 +1,9 @@
 export * from './android-bridge.types';
 export * from './user.types';
 export * from './ranking.types';
+export * from './ai.types';
+export * from './mission.types';
+export * from './upload.types';
 
 export interface ApiResponse<T = any> {
   success: boolean;
