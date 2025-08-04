@@ -89,8 +89,8 @@ const MyPage: React.FC = () => {
       setStatistics(statsResponse.data);
       setEditedName(profileResponse.data.name);
     } catch (error: any) {
-      console.error("사용자 데이터 로드 실패:", error);
-      showModal("error", "오류", "사용자 정보를 불러오는데 실패했습니다.");
+      console.error("Failed to load user data:", error);
+      showModal("error", "Error", "Failed to load user information.");
     } finally {
       setIsLoading(false);
     }
@@ -105,12 +105,12 @@ const MyPage: React.FC = () => {
 
   const handleCopyToClipboard = () => {
     if (profile && statistics) {
-      const textToCopy = `안녕하세요! 저는 ${profile.name}이고, 레벨 ${statistics.currentLevel}입니다. 총 ${statistics.currentCarbonCredits}개의 탄소 크레딧을 보유하고 있어요!`;
+      const textToCopy = `Hello! I'm ${profile.name}, Level ${statistics.currentLevel}. I have ${statistics.currentCarbonCredits} carbon credits!`;
       copyToClipboard(textToCopy);
       showModal(
         "info",
-        "복사 완료",
-        "프로필 정보가 클립보드에 복사되었습니다."
+        "Copied",
+        "Profile information has been copied to clipboard."
       );
     }
   };
@@ -121,8 +121,8 @@ const MyPage: React.FC = () => {
       setClipboardText(clipboardData.text);
       showModal(
         "info",
-        "클립보드 확인",
-        `클립보드 내용: ${clipboardData.text}`
+        "Clipboard",
+        `Clipboard content: ${clipboardData.text}`
       );
     }
   };
@@ -130,8 +130,8 @@ const MyPage: React.FC = () => {
   const handleShare = () => {
     if (profile && statistics) {
       share({
-        text: `EcoLife 앱에서 레벨 ${statistics.currentLevel}을 달성했습니다! 총 ${statistics.currentCarbonCredits}개의 탄소 크레딧을 획득했어요.`,
-        title: "EcoLife 성과 공유",
+        text: `I reached Level ${statistics.currentLevel} on EcoLife app! I earned ${statistics.currentCarbonCredits} carbon credits.`,
+        title: "Share EcoLife Achievement",
       });
     }
   };
@@ -162,7 +162,7 @@ const MyPage: React.FC = () => {
 
   const handleProfileUpdate = async () => {
     if (!editedName.trim()) {
-      showModal("warning", "입력 오류", "이름을 입력해주세요.");
+      showModal("warning", "Input Error", "Please enter your name.");
       return;
     }
 
@@ -176,10 +176,10 @@ const MyPage: React.FC = () => {
       );
       setProfile(response.data);
       setEditMode(false);
-      showModal("info", "성공", "프로필이 업데이트되었습니다.");
+      showModal("info", "Success", "Profile has been updated.");
     } catch (error: any) {
-      console.error("프로필 업데이트 실패:", error);
-      showModal("error", "오류", "프로필 업데이트에 실패했습니다.");
+      console.error("Profile update failed:", error);
+      showModal("error", "Error", "Failed to update profile.");
     } finally {
       setIsUpdating(false);
     }
@@ -187,17 +187,17 @@ const MyPage: React.FC = () => {
 
   const handlePasswordChange = async () => {
     if (!passwordForm.currentPassword || !passwordForm.newPassword) {
-      showModal("warning", "입력 오류", "모든 필드를 입력해주세요.");
+      showModal("warning", "Input Error", "Please fill in all fields.");
       return;
     }
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      showModal("warning", "입력 오류", "새 비밀번호가 일치하지 않습니다.");
+      showModal("warning", "Input Error", "New passwords do not match.");
       return;
     }
 
     if (passwordForm.newPassword.length < 6) {
-      showModal("warning", "입력 오류", "새 비밀번호는 6자 이상이어야 합니다.");
+      showModal("warning", "Input Error", "New password must be at least 6 characters.");
       return;
     }
 
@@ -215,43 +215,43 @@ const MyPage: React.FC = () => {
         confirmPassword: "",
       });
       setShowPasswordModal(false);
-      showModal("info", "성공", "비밀번호가 변경되었습니다.");
+      showModal("info", "Success", "Password has been changed.");
     } catch (error: any) {
-      console.error("비밀번호 변경 실패:", error);
+      console.error("Password change failed:", error);
       if (error.response?.status === 400) {
-        showModal("error", "오류", "현재 비밀번호가 올바르지 않습니다.");
+        showModal("error", "Error", "Current password is incorrect.");
       } else {
-        showModal("error", "오류", "비밀번호 변경에 실패했습니다.");
+        showModal("error", "Error", "Failed to change password.");
       }
     }
   };
 
   const handleAccountDeactivate = async () => {
     if (!deactivateForm.password) {
-      showModal("warning", "입력 오류", "비밀번호를 입력해주세요.");
+      showModal("warning", "Input Error", "Please enter your password.");
       return;
     }
 
     try {
       const deactivateData: DeactivateAccountRequest = {
         password: deactivateForm.password,
-        reason: deactivateForm.reason || "사용자 요청",
+        reason: deactivateForm.reason || "User request",
       };
 
       await privateApi.delete("/users/deactivate", { data: deactivateData });
 
       clearAuthData();
-      showModal("info", "계정 비활성화", "계정이 비활성화되었습니다.");
+      showModal("info", "Account Deactivated", "Your account has been deactivated.");
 
       setTimeout(() => {
         navigate("/welcome");
       }, 1500);
     } catch (error: any) {
-      console.error("계정 비활성화 실패:", error);
+      console.error("Account deactivation failed:", error);
       if (error.response?.status === 400) {
-        showModal("error", "오류", "비밀번호가 올바르지 않습니다.");
+        showModal("error", "Error", "Password is incorrect.");
       } else {
-        showModal("error", "오류", "계정 비활성화에 실패했습니다.");
+        showModal("error", "Error", "Failed to deactivate account.");
       }
     }
   };
@@ -274,7 +274,7 @@ const MyPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -297,7 +297,7 @@ const MyPage: React.FC = () => {
                       profile?.profileImageUrl ||
                       "https://via.placeholder.com/60"
                     }
-                    alt="프로필"
+                    alt="Profile"
                     className="w-16 h-16 rounded-full border-2 border-gray-100"
                   />
                   {profile?.isVerified && (
@@ -328,8 +328,8 @@ const MyPage: React.FC = () => {
                           onClick={handleProfileUpdate}
                           disabled={isUpdating}
                           className="text-green-500 font-medium disabled:opacity-50 text-sm px-3 py-1 bg-green-50 rounded-md"
-                        >
-                          {isUpdating ? "저장 중..." : "저장"}
+                          >
+                          {isUpdating ? "Saving..." : "Save"}
                         </button>
                         <button
                           onClick={() => {
@@ -338,7 +338,7 @@ const MyPage: React.FC = () => {
                           }}
                           className="text-gray-500 text-sm px-3 py-1 bg-gray-50 rounded-md"
                         >
-                          취소
+                          Cancel
                         </button>
                       </div>
                     </div>
@@ -382,12 +382,12 @@ const MyPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <StatCard
-                  value={`${statistics.totalMissionsCompleted}개`}
-                  label="완료한 미션"
+                  value={statistics.totalMissionsCompleted.toString()}
+                  label="Missions Completed"
                   color="purple"
                 />
                 <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-gray-600 text-sm">전체 순위</p>
+                  <p className="text-gray-600 text-sm">Global Ranking</p>
                   <p className="text-xl font-bold text-gray-900">
                     #{statistics.globalRanking}
                   </p>
@@ -413,7 +413,7 @@ const MyPage: React.FC = () => {
           <div className="px-6 py-4 border-b border-gray-100">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
               <Settings className="w-5 h-5 mr-2" />
-              계정 설정
+              Account Settings
             </h2>
           </div>
 
@@ -426,14 +426,14 @@ const MyPage: React.FC = () => {
                     className="flex-1 bg-green-500 text-white py-2 px-3 rounded-lg hover:bg-green-600 transition-colors text-sm flex items-center justify-center gap-1"
                   >
                     <Copy className="w-4 h-4" />
-                    프로필 복사
+                    Copy Profile
                   </button>
                   <button
                     onClick={handleGetClipboard}
                     className="flex-1 bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600 transition-colors text-sm flex items-center justify-center gap-1"
                   >
                     <Copy className="w-4 h-4" />
-                    클립보드 확인
+                    Check Clipboard
                   </button>
                 </div>
 
@@ -442,12 +442,12 @@ const MyPage: React.FC = () => {
                   className="w-full bg-purple-500 text-white py-2 px-3 rounded-lg hover:bg-purple-600 transition-colors text-sm flex items-center justify-center gap-1"
                 >
                   <Share2 className="w-4 h-4" />
-                  성과 공유하기
+                  Share Achievement
                 </button>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
-                    화면 밝기
+                    Screen Brightness
                   </label>
                   <input
                     type="range"
@@ -458,7 +458,7 @@ const MyPage: React.FC = () => {
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
                   <p className="text-xs text-gray-600">
-                    현재 밝기: {brightness}
+                    Current: {brightness}
                   </p>
                 </div>
               </div>
@@ -470,7 +470,7 @@ const MyPage: React.FC = () => {
             >
               <div className="flex items-center">
                 <Lock className="w-5 h-5 text-gray-400 mr-3" />
-                <span className="text-gray-700">비밀번호 변경</span>
+                <span className="text-gray-700">Change Password</span>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
             </button>
@@ -481,7 +481,7 @@ const MyPage: React.FC = () => {
             >
               <div className="flex items-center">
                 <Trash2 className="w-5 h-5 mr-3" />
-                <span>계정 비활성화</span>
+                <span>Deactivate Account</span>
               </div>
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -492,7 +492,7 @@ const MyPage: React.FC = () => {
             >
               <div className="flex items-center">
                 <LogOut className="w-5 h-5 text-gray-400 mr-3" />
-                <span className="text-gray-700">로그아웃</span>
+                <span className="text-gray-700">Logout</span>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
             </button>
@@ -502,17 +502,17 @@ const MyPage: React.FC = () => {
         {statistics && (
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              가입 정보
+              Account Information
             </h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">가입일</span>
+                <span className="text-gray-600">Member Since</span>
                 <span className="text-gray-900">
-                  {statistics.daysSinceJoined}일 전
+                  {statistics.daysSinceJoined} days ago
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">계정 상태</span>
+                <span className="text-gray-600">Account Status</span>
                 <span
                   className={`${
                     profile?.status === "ACTIVE"
@@ -520,23 +520,23 @@ const MyPage: React.FC = () => {
                       : "text-red-600"
                   }`}
                 >
-                  {profile?.status === "ACTIVE" ? "활성" : "비활성"}
+                  {profile?.status === "ACTIVE" ? "Active" : "Inactive"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">인증 상태</span>
+                <span className="text-gray-600">Verification Status</span>
                 <span
                   className={`${
                     profile?.isVerified ? "text-green-600" : "text-orange-600"
                   }`}
                 >
-                  {profile?.isVerified ? "인증됨" : "미인증"}
+                  {profile?.isVerified ? "Verified" : "Not Verified"}
                 </span>
               </div>
               {isAvailable && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">앱 환경</span>
-                  <span className="text-blue-600">안드로이드</span>
+                  <span className="text-gray-600">Platform</span>
+                  <span className="text-blue-600">Android</span>
                 </div>
               )}
             </div>
@@ -547,11 +547,11 @@ const MyPage: React.FC = () => {
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
-            <h3 className="text-lg font-semibold mb-4">비밀번호 변경</h3>
+            <h3 className="text-lg font-semibold mb-4">Change Password</h3>
             <div className="space-y-4">
               <input
                 type="password"
-                placeholder="현재 비밀번호"
+                placeholder="Current Password"
                 value={passwordForm.currentPassword}
                 onChange={(e) =>
                   setPasswordForm({
@@ -563,7 +563,7 @@ const MyPage: React.FC = () => {
               />
               <input
                 type="password"
-                placeholder="새 비밀번호"
+                placeholder="New Password"
                 value={passwordForm.newPassword}
                 onChange={(e) =>
                   setPasswordForm({
@@ -575,7 +575,7 @@ const MyPage: React.FC = () => {
               />
               <input
                 type="password"
-                placeholder="새 비밀번호 확인"
+                placeholder="Confirm New Password"
                 value={passwordForm.confirmPassword}
                 onChange={(e) =>
                   setPasswordForm({
@@ -591,13 +591,13 @@ const MyPage: React.FC = () => {
                 onClick={() => setShowPasswordModal(false)}
                 className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               >
-                취소
+                Cancel
               </button>
               <button
                 onClick={handlePasswordChange}
                 className="flex-1 py-3 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600"
               >
-                변경
+                Change
               </button>
             </div>
           </div>
@@ -608,15 +608,15 @@ const MyPage: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
             <h3 className="text-lg font-semibold mb-2 text-red-600">
-              계정 비활성화
+              Deactivate Account
             </h3>
             <p className="text-gray-600 text-sm mb-4">
-              계정을 비활성화하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+              Are you sure you want to deactivate your account? This action cannot be undone.
             </p>
             <div className="space-y-4">
               <input
                 type="password"
-                placeholder="비밀번호 확인"
+                placeholder="Confirm Password"
                 value={deactivateForm.password}
                 onChange={(e) =>
                   setDeactivateForm({
@@ -627,7 +627,7 @@ const MyPage: React.FC = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-red-500 focus:outline-none"
               />
               <textarea
-                placeholder="비활성화 사유 (선택사항)"
+                placeholder="Reason for deactivation (optional)"
                 value={deactivateForm.reason}
                 onChange={(e) =>
                   setDeactivateForm({
@@ -643,13 +643,13 @@ const MyPage: React.FC = () => {
                 onClick={() => setShowDeactivateModal(false)}
                 className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               >
-                취소
+                Cancel
               </button>
               <button
                 onClick={handleAccountDeactivate}
                 className="flex-1 py-3 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600"
               >
-                비활성화
+                Deactivate
               </button>
             </div>
           </div>
