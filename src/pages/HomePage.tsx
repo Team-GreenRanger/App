@@ -93,22 +93,22 @@ const HomePage = () => {
           <h2 className="text-xl font-bold text-gray-800 mb-2">
             Welcome {profile?.name || "Guest"}!
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-4">
             You planted {getWeeklyTreesPlanted()} trees this week
           </p>
-          <div className="mt-3 flex items-center space-x-4 text-sm">
-            <div className="flex items-center space-x-1">
-              <span className="text-green-600 font-medium">
-                Level {statistics?.currentLevel || 1}
-              </span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-blue-600 font-medium">
+
+          {/* 캡슐 형태의 통계 표시 */}
+          <div className="flex flex-wrap gap-3">
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200">
+              <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+              <span className="text-blue-700 font-semibold text-sm">
                 {statistics?.totalCo2Reduction || 0}kg CO₂ saved
               </span>
             </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-purple-600 font-medium">
+
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-50 to-purple-100 rounded-full border border-purple-200">
+              <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+              <span className="text-purple-700 font-semibold text-sm">
                 #{statistics?.globalRanking || 999} rank
               </span>
             </div>
