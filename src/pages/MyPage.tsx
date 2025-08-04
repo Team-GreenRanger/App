@@ -285,9 +285,13 @@ const MyPage: React.FC = () => {
       <div className="bg-white">
         <div className="px-6 pt-12 pb-8">
           <div className="flex items-start justify-between mb-6">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
+              {" "}
+              {/* min-w-0 추가로 flex 컨테이너 축소 허용 */}
               <div className="flex items-center mb-3">
-                <div className="relative">
+                <div className="relative flex-shrink-0">
+                  {" "}
+                  {/* flex-shrink-0로 프로필 이미지 크기 고정 */}
                   <img
                     src={
                       profile?.profileImageUrl ||
@@ -302,47 +306,60 @@ const MyPage: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <div className="ml-4 flex-1">
+                <div className="ml-4 flex-1 min-w-0 overflow-hidden">
+                  {" "}
+                  {/* min-w-0과 overflow-hidden 추가 */}
                   {editMode ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={editedName}
-                        onChange={(e) => setEditedName(e.target.value)}
-                        className="text-xl font-bold text-gray-900 bg-transparent border-b border-gray-300 focus:border-green-500 focus:outline-none flex-1"
-                        disabled={isUpdating}
-                      />
-                      <button
-                        onClick={handleProfileUpdate}
-                        disabled={isUpdating}
-                        className="text-green-500 font-medium disabled:opacity-50"
-                      >
-                        {isUpdating ? "저장 중..." : "저장"}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditMode(false);
-                          setEditedName(profile?.name || "");
-                        }}
-                        className="text-gray-500"
-                      >
-                        취소
-                      </button>
+                    <div className="space-y-2">
+                      {" "}
+                      {/* flex 대신 세로 배치로 변경 */}
+                      <div className="flex items-center gap-2 min-w-0">
+                        <input
+                          type="text"
+                          value={editedName}
+                          onChange={(e) => setEditedName(e.target.value)}
+                          className="text-xl font-bold text-gray-900 bg-transparent border-b border-gray-300 focus:border-green-500 focus:outline-none flex-1 min-w-0 max-w-[200px] truncate" // max-w 추가하고 truncate로 텍스트 자르기
+                          disabled={isUpdating}
+                          maxLength={20} // 최대 글자 수 제한
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handleProfileUpdate}
+                          disabled={isUpdating}
+                          className="text-green-500 font-medium disabled:opacity-50 text-sm px-3 py-1 bg-green-50 rounded-md"
+                        >
+                          {isUpdating ? "저장 중..." : "저장"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditMode(false);
+                            setEditedName(profile?.name || "");
+                          }}
+                          className="text-gray-500 text-sm px-3 py-1 bg-gray-50 rounded-md"
+                        >
+                          취소
+                        </button>
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <h1 className="text-xl font-bold text-gray-900">
-                        {profile?.name}
-                      </h1>
-                      <button
-                        onClick={() => setEditMode(true)}
-                        className="text-gray-400 hover:text-gray-600"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <h1 className="text-xl font-bold text-gray-900 truncate flex-1 min-w-0">
+                          {profile?.name}
+                        </h1>
+                        <button
+                          onClick={() => setEditMode(true)}
+                          className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-gray-500 text-sm truncate">
+                        {profile?.email}
+                      </p>
                     </div>
                   )}
-                  <p className="text-gray-500 text-sm">{profile?.email}</p>
                 </div>
               </div>
             </div>
