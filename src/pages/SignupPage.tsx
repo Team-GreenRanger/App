@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Mail, Lock, Eye, EyeOff, User, Globe, Calendar, ChevronDown, Search } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  Globe,
+  Calendar,
+  ChevronDown,
+  Search,
+} from "lucide-react";
 import logo from "../assets/images/EcoLifeLogo.svg";
 import { useNavigate } from "react-router-dom";
 import { publicApi } from "../api";
@@ -59,16 +69,24 @@ const SignupPage = () => {
   useEffect(() => {
     const loadCountries = async () => {
       try {
-        const response = await fetch('/country.json');
+        const response = await fetch("/country.json");
         const data: CountryData = await response.json();
         setCountries(data.countries);
         setFilteredCountries(data.countries);
       } catch (error) {
-        console.error('Failed to load countries:', error);
+        console.error("Failed to load countries:", error);
         // Fallback to a basic list if JSON loading fails
         const fallbackCountries = [
-          "South Korea", "United States", "Japan", "China", "Germany", 
-          "France", "United Kingdom", "Canada", "Australia", "Brazil"
+          "South Korea",
+          "United States",
+          "Japan",
+          "China",
+          "Germany",
+          "France",
+          "United Kingdom",
+          "Canada",
+          "Australia",
+          "Brazil",
         ];
         setCountries(fallbackCountries);
         setFilteredCountries(fallbackCountries);
@@ -83,7 +101,7 @@ const SignupPage = () => {
     if (countrySearchTerm.trim() === "") {
       setFilteredCountries(countries);
     } else {
-      const filtered = countries.filter(country =>
+      const filtered = countries.filter((country) =>
         country.toLowerCase().includes(countrySearchTerm.toLowerCase())
       );
       setFilteredCountries(filtered);
@@ -129,23 +147,27 @@ const SignupPage = () => {
       showModal("warning", "Input Error", "Please enter your age.");
       return false;
     }
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       showModal("warning", "Input Error", "Please enter a valid email format.");
       return false;
     }
     if (formData.password.length < 8) {
-      showModal("warning", "Input Error", "Password must be at least 8 characters.");
+      showModal(
+        "warning",
+        "Input Error",
+        "Password must be at least 8 characters."
+      );
       return false;
     }
-    
+
     const age = parseInt(formData.age);
-    if (isNaN(age) || age < 13 || age > 120) {
+    if (isNaN(age) || age < 0 || age > 120) {
       showModal("warning", "Input Error", "Please enter a valid age (13-120).");
       return false;
     }
-    
+
     return true;
   };
 
@@ -179,7 +201,11 @@ const SignupPage = () => {
 
       saveAuthData(accessToken, user);
 
-      showModal("info", "Sign Up Successful", "Welcome! You are now logged in.");
+      showModal(
+        "info",
+        "Sign Up Successful",
+        "Welcome! You are now logged in."
+      );
 
       setTimeout(() => {
         navigate("/");
@@ -187,9 +213,17 @@ const SignupPage = () => {
     } catch (error: any) {
       console.error("Signup error:", error);
       if (error.response?.status === 409) {
-        showModal("error", "Sign Up Failed", "This email is already registered.");
+        showModal(
+          "error",
+          "Sign Up Failed",
+          "This email is already registered."
+        );
       } else if (error.response?.status === 400) {
-        showModal("error", "Sign Up Failed", "Please check your input information.");
+        showModal(
+          "error",
+          "Sign Up Failed",
+          "Please check your input information."
+        );
       } else {
         showModal(
           "error",
@@ -279,12 +313,20 @@ const SignupPage = () => {
                 className="w-full pl-12 pr-12 py-4 border-b-2 border-gray-200 bg-transparent focus:border-green-500 focus:outline-none text-left transition-all duration-300 disabled:opacity-50"
                 disabled={isLoading}
               >
-                <span className={formData.nationality ? "text-gray-800" : "text-gray-400"}>
+                <span
+                  className={
+                    formData.nationality ? "text-gray-800" : "text-gray-400"
+                  }
+                >
                   {formData.nationality || "Select Nationality"}
                 </span>
               </button>
-              <ChevronDown className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-transform duration-200 ${showCountryDropdown ? "rotate-180" : ""}`} />
-              
+              <ChevronDown
+                className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-transform duration-200 ${
+                  showCountryDropdown ? "rotate-180" : ""
+                }`}
+              />
+
               {showCountryDropdown && (
                 <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg">
                   {/* Search Input */}
@@ -301,7 +343,7 @@ const SignupPage = () => {
                       />
                     </div>
                   </div>
-                  
+
                   {/* Countries List */}
                   <div className="max-h-48 overflow-y-auto">
                     {filteredCountries.length > 0 ? (
@@ -374,8 +416,8 @@ const SignupPage = () => {
 
       {/* Overlay when dropdown is open */}
       {showCountryDropdown && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setShowCountryDropdown(false)}
         />
       )}
