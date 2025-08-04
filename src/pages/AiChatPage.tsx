@@ -11,9 +11,17 @@ const ChatPage = () => {
   const [inputValue, setInputValue] = useState("");
   const [showWelcome, setShowWelcome] = useState(true);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isAndroid, setIsAndroid] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // 안드로이드 환경 감지
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isAndroidDevice = userAgent.includes("android");
+    setIsAndroid(isAndroidDevice);
+  }, []);
 
   // 키보드 높이 감지 및 처리
   useEffect(() => {
@@ -226,7 +234,8 @@ const ChatPage = () => {
             onFocus={handleInputFocus}
             placeholder="Enter your question"
             disabled={isLoading}
-            className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
+            className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400 text-base" // text-base로 16px 보장
+            style={{ fontSize: "16px" }} // iOS 줌 방지
           />
           <button
             onClick={() => handleSubmit()}
