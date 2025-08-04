@@ -10,13 +10,71 @@ const ChatPage = () => {
   const { messages, isLoading, error, sendMessage, clearError } = useAiChat();
   const [inputValue, setInputValue] = useState("");
   const [showWelcome, setShowWelcome] = useState(true);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // 키보드 높이 감지 및 처리
+  useEffect(() => {
+    const handleResize = () => {
+      // viewport 높이와 화면 높이의 차이로 키보드 높이 계산
+      const viewportHeight =
+        window.visualViewport?.height || window.innerHeight;
+      const windowHeight = window.screen.height;
+      const keyboardHeight = Math.max(0, window.innerHeight - viewportHeight);
+
+      setKeyboardHeight(keyboardHeight);
+    };
+
+    const handleVisualViewportChange = () => {
+      if (window.visualViewport) {
+        const keyboardHeight = Math.max(
+          0,
+          window.innerHeight - window.visualViewport.height
+        );
+        setKeyboardHeight(keyboardHeight);
+      }
+    };
+
+    // iOS Safari 대응
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener(
+        "resize",
+        handleVisualViewportChange
+      );
+    }
+
+    // Android 및 기타 브라우저 대응
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener(
+          "resize",
+          handleVisualViewportChange
+        );
+      }
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  // 입력창 포커스 시 키보드가 올라오면 스크롤 조정
+  useEffect(() => {
+    if (keyboardHeight > 0 && inputRef.current === document.activeElement) {
+      // 키보드가 올라왔을 때 약간의 딜레이 후 스크롤
+      setTimeout(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 300);
+    }
+  }, [keyboardHeight]);
 
   // 메시지가 추가될 때마다 스크롤을 맨 아래로
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isLoading]);
 
@@ -38,8 +96,23 @@ const ChatPage = () => {
     }
   };
 
+  const handleInputFocus = () => {
+    // 입력창 포커스 시 키보드가 올라올 때까지 약간 대기 후 스크롤
+    setTimeout(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 300);
+  };
+
   return (
-    <div className="h-screen bg-white flex flex-col">
+    <div
+      className="bg-white flex flex-col"
+      style={{
+        height: "100vh",
+        paddingBottom: keyboardHeight > 0 ? `${keyboardHeight}px` : "0px",
+      }}
+    >
       {/* Header - 고정 */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
         <div className="flex items-center gap-3">
@@ -54,7 +127,13 @@ const ChatPage = () => {
       </div>
 
       {/* Chat Content - 스크롤 가능 */}
-      <div ref={chatContainerRef} className="flex-1 overflow-y-auto">
+      <div
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto"
+        style={{
+          paddingBottom: keyboardHeight > 80 ? "80px" : "0px", // 입력창을 위한 여유 공간
+        }}
+      >
         {showWelcome ? (
           <AiWelcomeSection onSubmit={handleSubmit} />
         ) : (
@@ -65,7 +144,7 @@ const ChatPage = () => {
                 <p className="text-sm">{error}</p>
               </div>
             )}
-            
+
             <div className="space-y-4">
               {messages.map((message, index) => (
                 <div
@@ -107,7 +186,7 @@ const ChatPage = () => {
                   </div>
                 </div>
               ))}
-              
+
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="bg-green-500 rounded-2xl rounded-tl-md px-4 py-3 text-white">
@@ -118,7 +197,7 @@ const ChatPage = () => {
                   </div>
                 </div>
               )}
-              
+
               {/* 스크롤 대상 요소 */}
               <div ref={messagesEndRef} />
             </div>
@@ -126,14 +205,25 @@ const ChatPage = () => {
         )}
       </div>
 
-      {/* Input Area - 고정 */}
-      <div className="p-4 border-t border-gray-100 flex-shrink-0">
+      {/* Input Area - 키보드 높이에 따라 위치 조정 */}
+      <div
+        className="p-4 border-t border-gray-100 flex-shrink-0 bg-white"
+        style={{
+          position: keyboardHeight > 0 ? "fixed" : "relative",
+          bottom: keyboardHeight > 0 ? `${keyboardHeight}px` : "auto",
+          left: keyboardHeight > 0 ? "0" : "auto",
+          right: keyboardHeight > 0 ? "0" : "auto",
+          zIndex: keyboardHeight > 0 ? 1000 : "auto",
+        }}
+      >
         <div className="relative">
           <input
+            ref={inputRef}
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
+            onFocus={handleInputFocus}
             placeholder="Enter your question"
             disabled={isLoading}
             className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
