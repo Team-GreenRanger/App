@@ -1,1 +1,142 @@
-import { useState, useCallback, useEffect } from 'react';\nimport { missionApi } from '../api';\nimport {\n  Mission,\n  UserMission,\n  MissionStatus,\n  UserMissionStatus,\n  AssignMissionRequest,\n  SubmitMissionRequest,\n} from '../types';\n\ninterface UseMissionsReturn {\n  missions: Mission[];\n  userMissions: UserMission[];\n  dailyMissions: UserMission[];\n  isLoading: boolean;\n  error: string | null;\n  loadMissions: (status?: MissionStatus, type?: string) => Promise<void>;\n  loadUserMissions: (status?: UserMissionStatus) => Promise<void>;\n  loadDailyMissions: () => Promise<void>;\n  assignMission: (request: AssignMissionRequest) => Promise<UserMission | null>;\n  submitMission: (userMissionId: string, request: SubmitMissionRequest) => Promise<UserMission | null>;\n  clearError: () => void;\n}\n\nexport const useMissions = (): UseMissionsReturn => {\n  const [missions, setMissions] = useState<Mission[]>([]);\n  const [userMissions, setUserMissions] = useState<UserMission[]>([]);\n  const [dailyMissions, setDailyMissions] = useState<UserMission[]>([]);\n  const [isLoading, setIsLoading] = useState(false);\n  const [error, setError] = useState<string | null>(null);\n\n  const loadMissions = useCallback(async (status?: MissionStatus, type?: string) => {\n    setIsLoading(true);\n    setError(null);\n\n    try {\n      const data = await missionApi.getMissions(status, type);\n      setMissions(data);\n    } catch (err: any) {\n      setError(err.response?.data?.message || err.message || '미션을 불러오는 중 오류가 발생했습니다.');\n    } finally {\n      setIsLoading(false);\n    }\n  }, []);\n\n  const loadUserMissions = useCallback(async (status?: UserMissionStatus) => {\n    setIsLoading(true);\n    setError(null);\n\n    try {\n      const data = await missionApi.getUserMissions(status);\n      setUserMissions(data);\n    } catch (err: any) {\n      setError(err.response?.data?.message || err.message || '사용자 미션을 불러오는 중 오류가 발생했습니다.');\n    } finally {\n      setIsLoading(false);\n    }\n  }, []);\n\n  const loadDailyMissions = useCallback(async () => {\n    setIsLoading(true);\n    setError(null);\n\n    try {\n      const data = await missionApi.getDailyMissions();\n      setDailyMissions(data);\n    } catch (err: any) {\n      setError(err.response?.data?.message || err.message || '일일 미션을 불러오는 중 오류가 발생했습니다.');\n    } finally {\n      setIsLoading(false);\n    }\n  }, []);\n\n  const assignMission = useCallback(async (request: AssignMissionRequest): Promise<UserMission | null> => {\n    setIsLoading(true);\n    setError(null);\n\n    try {\n      const userMission = await missionApi.assignMission(request);\n      \n      // 기존 사용자 미션 목록 업데이트\n      setUserMissions(prev => [...prev, userMission]);\n      \n      return userMission;\n    } catch (err: any) {\n      setError(err.response?.data?.message || err.message || '미션 할당 중 오류가 발생했습니다.');\n      return null;\n    } finally {\n      setIsLoading(false);\n    }\n  }, []);\n\n  const submitMission = useCallback(async (userMissionId: string, request: SubmitMissionRequest): Promise<UserMission | null> => {\n    setIsLoading(true);\n    setError(null);\n\n    try {\n      const updatedUserMission = await missionApi.submitMission(userMissionId, request);\n      \n      // 사용자 미션 목록 업데이트\n      setUserMissions(prev => \n        prev.map(um => um.id === userMissionId ? updatedUserMission : um)\n      );\n      \n      // 일일 미션 목록도 있다면 업데이트\n      setDailyMissions(prev => \n        prev.map(um => um.id === userMissionId ? updatedUserMission : um)\n      );\n      \n      return updatedUserMission;\n    } catch (err: any) {\n      setError(err.response?.data?.message || err.message || '미션 제출 중 오류가 발생했습니다.');\n      return null;\n    } finally {\n      setIsLoading(false);\n    }\n  }, []);\n\n  const clearError = useCallback(() => {\n    setError(null);\n  }, []);\n\n  // 초기 로드\n  useEffect(() => {\n    loadDailyMissions();\n  }, [loadDailyMissions]);\n\n  return {\n    missions,\n    userMissions,\n    dailyMissions,\n    isLoading,\n    error,\n    loadMissions,\n    loadUserMissions,\n    loadDailyMissions,\n    assignMission,\n    submitMission,\n    clearError,\n  };\n};\n
+import { useState, useCallback, useEffect } from 'react';
+import { missionApi } from '../api';
+import {
+  Mission,
+  UserMission,
+  MissionStatus,
+  UserMissionStatus,
+  AssignMissionRequest,
+  SubmitMissionRequest,
+} from '../types';
+
+interface UseMissionsReturn {
+  missions: Mission[];
+  userMissions: UserMission[];
+  dailyMissions: UserMission[];
+  isLoading: boolean;
+  error: string | null;
+  loadMissions: (status?: MissionStatus, type?: string) => Promise<void>;
+  loadUserMissions: (status?: UserMissionStatus) => Promise<void>;
+  loadDailyMissions: () => Promise<void>;
+  assignMission: (request: AssignMissionRequest) => Promise<UserMission | null>;
+  submitMission: (userMissionId: string, request: SubmitMissionRequest) => Promise<UserMission | null>;
+  clearError: () => void;
+}
+
+export const useMissions = (): UseMissionsReturn => {
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [userMissions, setUserMissions] = useState<UserMission[]>([]);
+  const [dailyMissions, setDailyMissions] = useState<UserMission[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadMissions = useCallback(async (status?: MissionStatus, type?: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await missionApi.getMissions(status, type);
+      setMissions(data);
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || '미션을 불러오는 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const loadUserMissions = useCallback(async (status?: UserMissionStatus) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await missionApi.getUserMissions(status);
+      setUserMissions(data);
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || '사용자 미션을 불러오는 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const loadDailyMissions = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await missionApi.getDailyMissions();
+      setDailyMissions(data);
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || '일일 미션을 불러오는 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const assignMission = useCallback(async (request: AssignMissionRequest): Promise<UserMission | null> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const userMission = await missionApi.assignMission(request);
+      
+      // 기존 사용자 미션 목록 업데이트
+      setUserMissions(prev => [...prev, userMission]);
+      
+      return userMission;
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || '미션 할당 중 오류가 발생했습니다.');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const submitMission = useCallback(async (userMissionId: string, request: SubmitMissionRequest): Promise<UserMission | null> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const updatedUserMission = await missionApi.submitMission(userMissionId, request);
+      
+      // 사용자 미션 목록 업데이트
+      setUserMissions(prev => 
+        prev.map(um => um.id === userMissionId ? updatedUserMission : um)
+      );
+      
+      // 일일 미션 목록도 있다면 업데이트
+      setDailyMissions(prev => 
+        prev.map(um => um.id === userMissionId ? updatedUserMission : um)
+      );
+      
+      return updatedUserMission;
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || '미션 제출 중 오류가 발생했습니다.');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  // 초기 로드
+  useEffect(() => {
+    loadDailyMissions();
+  }, [loadDailyMissions]);
+
+  return {
+    missions,
+    userMissions,
+    dailyMissions,
+    isLoading,
+    error,
+    loadMissions,
+    loadUserMissions,
+    loadDailyMissions,
+    assignMission,
+    submitMission,
+    clearError,
+  };
+};

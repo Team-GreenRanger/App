@@ -1,1 +1,27 @@
-import { useLocation } from \"react-router-dom\";\nimport MissionComplete from \"../components/MissionComplete\";\nimport MissionNotVerified from \"../components/MissionNotVerified\";\n\nconst MissionCompletePage = () => {\n  const location = useLocation();\n  const { missionTitle, isApproved } = location.state || {};\n\n  return (\n    <div className=\"w-full max-w-md mx-auto bg-white min-h-screen flex flex-col\">\n      {/* 메인 컨텐츠 */}\n      <div className=\"flex-1 flex items-center justify-center\">\n        {isApproved ? (\n          <MissionComplete \n            isFullyComplete={true} \n            points={50} // 서버에서 받아와야 할 수도 있지만 일단 고정값\n            missionTitle={missionTitle}\n          />\n        ) : (\n          <MissionNotVerified missionTitle={missionTitle} />\n        )}\n      </div>\n    </div>\n  );\n};\n\nexport default MissionCompletePage;\n
+import { useLocation } from "react-router-dom";
+import MissionComplete from "../components/MissionComplete";
+import MissionNotVerified from "../components/MissionNotVerified";
+
+const MissionCompletePage = () => {
+  const location = useLocation();
+  const { missionTitle, isApproved } = location.state || {};
+
+  return (
+    <div className="w-full max-w-md mx-auto bg-white min-h-screen flex flex-col">
+      {/* 메인 컨텐츠 */}
+      <div className="flex-1 flex items-center justify-center">
+        {isApproved ? (
+          <MissionComplete 
+            isFullyComplete={true} 
+            points={50}
+            missionTitle={missionTitle}
+          />
+        ) : (
+          <MissionNotVerified missionTitle={missionTitle} />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MissionCompletePage;

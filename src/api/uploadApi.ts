@@ -1,1 +1,79 @@
-import { privateApi } from './index';\nimport {\n  FileUploadResponse,\n  MultipleFileUploadResponse,\n} from '../types';\n\nclass UploadApiService {\n  async uploadImage(file: File): Promise<FileUploadResponse> {\n    const formData = new FormData();\n    formData.append('file', file);\n\n    const response = await privateApi.post<FileUploadResponse>('/upload/image', formData, {\n      headers: {\n        'Content-Type': 'multipart/form-data',\n      },\n    });\n    return response.data;\n  }\n\n  async uploadMissionImages(files: File[]): Promise<MultipleFileUploadResponse> {\n    const formData = new FormData();\n    files.forEach(file => {\n      formData.append('files', file);\n    });\n\n    const response = await privateApi.post<MultipleFileUploadResponse>('/upload/mission-images', formData, {\n      headers: {\n        'Content-Type': 'multipart/form-data',\n      },\n    });\n    return response.data;\n  }\n\n  async uploadProfileImage(file: File): Promise<FileUploadResponse> {\n    const formData = new FormData();\n    formData.append('file', file);\n\n    const response = await privateApi.post<FileUploadResponse>('/upload/profile-image', formData, {\n      headers: {\n        'Content-Type': 'multipart/form-data',\n      },\n    });\n    return response.data;\n  }\n\n  // 이미지 파일을 dataURL에서 File 객체로 변환하는 유틸리티 메서드\n  dataURLToFile(dataURL: string, filename: string): File {\n    const arr = dataURL.split(',');\n    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';\n    const bstr = atob(arr[1]);\n    let n = bstr.length;\n    const u8arr = new Uint8Array(n);\n    \n    while (n--) {\n      u8arr[n] = bstr.charCodeAt(n);\n    }\n    \n    return new File([u8arr], filename, { type: mime });\n  }\n\n  // 이미지 파일 검증\n  validateImageFile(file: File): boolean {\n    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];\n    const maxSize = 5 * 1024 * 1024; // 5MB\n\n    if (!allowedTypes.includes(file.type)) {\n      throw new Error('Only JPEG, JPG, PNG, and WebP images are allowed');\n    }\n\n    if (file.size > maxSize) {\n      throw new Error('File size must be less than 5MB');\n    }\n\n    return true;\n  }\n}\n\nexport const uploadApi = new UploadApiService();\nexport default uploadApi;\n
+import { privateApi } from './index';
+import {
+  FileUploadResponse,
+  MultipleFileUploadResponse,
+} from '../types';
+
+class UploadApiService {
+  async uploadImage(file: File): Promise<FileUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await privateApi.post<FileUploadResponse>('/upload/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
+  async uploadMissionImages(files: File[]): Promise<MultipleFileUploadResponse> {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+
+    const response = await privateApi.post<MultipleFileUploadResponse>('/upload/mission-images', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
+  async uploadProfileImage(file: File): Promise<FileUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await privateApi.post<FileUploadResponse>('/upload/profile-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
+  // 이미지 파일을 dataURL에서 File 객체로 변환하는 유틸리티 메서드
+  dataURLToFile(dataURL: string, filename: string): File {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    
+    return new File([u8arr], filename, { type: mime });
+  }
+
+  // 이미지 파일 검증
+  validateImageFile(file: File): boolean {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error('Only JPEG, JPG, PNG, and WebP images are allowed');
+    }
+
+    if (file.size > maxSize) {
+      throw new Error('File size must be less than 5MB');
+    }
+
+    return true;
+  }
+}
+
+export const uploadApi = new UploadApiService();
+export default uploadApi;
