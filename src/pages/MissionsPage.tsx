@@ -31,7 +31,8 @@ const MissionsPage: React.FC = () => {
     navigate(`/camera/${userMission.missionId}`, {
       state: {
         userMissionId: userMission.id,
-        missionTitle: userMission.mission?.title || "알 수 없는 미션"
+        missionTitle: userMission.mission.title,
+        remainingSubmissions: userMission.remainingSubmissions
       }
     });
   };
@@ -69,12 +70,17 @@ const MissionsPage: React.FC = () => {
               {currentMissions.map((userMission, index) => (
                 <MissionCard
                   key={userMission.id || index}
-                  title={userMission.mission?.title || "알 수 없는 미션"}
-                  description={userMission.mission?.description || ""}
-                  co2Amount={`${userMission.mission?.co2ReductionAmount || 0}kg CO2`}
+                  title={userMission.mission.title}
+                  description={userMission.mission.description}
+                  co2Amount={`${userMission.mission.co2ReductionAmount}kg CO2`}
+                  creditReward={userMission.mission.creditReward}
+                  difficulty={userMission.mission.difficulty}
                   current={userMission.currentProgress}
                   total={userMission.targetProgress}
+                  progressPercentage={userMission.progressPercentage}
+                  remainingSubmissions={userMission.remainingSubmissions}
                   isCompleted={userMission.isDone}
+                  status={userMission.status}
                   onCameraClick={() => handleCameraClick(userMission)}
                 />
               ))}

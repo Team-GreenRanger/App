@@ -49,8 +49,8 @@ export interface UserMission {
   userId: string;
   missionId: string;
   status: UserMissionStatus;
-  currentProgress: number;
-  targetProgress: number;
+  currentProgress: number; // 완료한 횟수
+  targetProgress: number; // 총 해야할 횟수  
   submissionImageUrls: string[];
   submissionNote?: string;
   verificationNote?: string;
@@ -58,17 +58,16 @@ export interface UserMission {
   verifiedAt?: Date;
   completedAt?: Date;
   assignedAt: Date;
-  isActive: boolean; // 새로 추가
-  isDone: boolean; // 새로 추가
-  mission?: Mission; // Mission 정보 포함
+  isActive: boolean;
+  isDone: boolean;
+  mission: Mission; // 항상 포함됨 (Optional 제거)
+  progressPercentage: number; // 진행률 (0-100)
+  remainingSubmissions: number; // 남은 제출 횟수
 }
 
 export interface SubmitMissionResponse extends UserMission {
   isFullyCompleted: boolean;
-  remainingSubmissions: number;
   points: number;
-  isActive: boolean; // 가독성을 위해 명시적 다시 선언
-  isDone: boolean; // 가독성을 위해 명시적 다시 선언
 }
 
 export interface MissionWithDetails extends Mission {

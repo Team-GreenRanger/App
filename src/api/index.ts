@@ -6,3 +6,4 @@ export { default as privateApi } from "./privateApi";
 export { default as aiApi } from "./aiApi";
 export { default as uploadApi } from "./uploadApi";
 export { default as missionApi } from "./missionApi";
+export { default as rankingApi } from "./rankingApi";

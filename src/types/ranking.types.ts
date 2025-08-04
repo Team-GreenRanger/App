@@ -1,5 +1,6 @@
 export type RankingType = 'CARBON_CREDITS' | 'MISSIONS_COMPLETED' | 'CO2_REDUCTION';
 export type RankingPeriod = 'WEEKLY' | 'MONTHLY' | 'ALL_TIME';
+export type RankingScope = 'LOCAL' | 'GLOBAL';
 
 export interface RankingUser {
   rank: number;
@@ -7,7 +8,6 @@ export interface RankingUser {
   userName: string;
   profileImageUrl?: string;
   score: number;
-  level: number;
   isCurrentUser: boolean;
 }
 
@@ -16,6 +16,7 @@ export interface RankingResponse {
   total: number;
   type: RankingType;
   period: RankingPeriod;
+  scope: RankingScope;
   hasNext: boolean;
 }
 
@@ -29,16 +30,19 @@ export interface UserRankingStats {
 }
 
 export interface LeaderboardData {
-  weekly: RankingResponse;
-  monthly: RankingResponse;
-  allTime: RankingResponse;
+  localWeekly: RankingResponse;
+  localMonthly: RankingResponse;
+  localAllTime: RankingResponse;
+  globalWeekly: RankingResponse;
+  globalMonthly: RankingResponse;
+  globalAllTime: RankingResponse;
   currentUserStats: UserRankingStats;
 }
 
 export interface RankingStats {
   totalUsers: number;
   currentUser: UserRankingStats;
-  topCarbonCreditUsers: string[];
-  topMissionUsers: string[];
-  topCo2ReductionUsers: string[];
+  topCarbonCreditUsers: RankingUser[];
+  topMissionUsers: RankingUser[];
+  topCo2ReductionUsers: RankingUser[];
 }

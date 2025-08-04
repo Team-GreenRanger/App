@@ -1,21 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { useAndroidApi } from "../hooks/useAndroidApi";
-import { privateApi } from "../api";
+import { useAndroidApi, useRanking } from "../hooks";
 import Tabs from "../components/Tabs";
 import { RankingHeaderCard, RankingItem, ToastModal } from "../components";
 import {
-  LeaderboardData,
   UserRankingStats,
   RankingUser,
-  CarbonCreditBalance,
+  RankingScope,
+  RankingPeriod,
 } from "../types";
 
 const RankingPage = () => {
   const { updateBottomNavigation, vibrate, showToast } = useAndroidApi();
-  const [activeTab, setActiveTab] = useState("weekly");
-  const [leaderboardData, setLeaderboardData] =
-    useState<LeaderboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { leaderboardData, isLoading, error, loadLeaderboard } = useRanking();
+  const [activeScopeTab, setActiveScopeTab] = useState<RankingScope>("GLOBAL");
   const [modal, setModal] = useState({
     isVisible: false,
     type: "info" as "info" | "warning" | "error" | "confirm",
@@ -23,32 +20,21 @@ const RankingPage = () => {
     message: "",
   });
 
-  const tabs = [
-    { id: "weekly", label: "Weekly" },
-    { id: "monthly", label: "Monthly" },
-    { id: "allTime", label: "All Time" },
+  const scopeTabs = [
+    { id: "GLOBAL", label: "Global" },
+    { id: "LOCAL", label: "Local" },
   ];
 
   useEffect(() => {
     updateBottomNavigation("ranking");
-    loadData();
-  }, [updateBottomNavigation]);
+    loadLeaderboard();
+  }, [updateBottomNavigation, loadLeaderboard]);
 
-  const loadData = async () => {
-    try {
-      setIsLoading(true);
-      const response = await privateApi.get<LeaderboardData>(
-        "/rankings/leaderboard"
-      );
-
-      setLeaderboardData(response.data);
-    } catch (error) {
-      console.error("Failed to load leaderboard data:", error);
-      showModal("error", "Error", "Failed to load ranking data.");
-    } finally {
-      setIsLoading(false);
+  useEffect(() => {
+    if (error) {
+      showModal("error", "Error", error);
     }
-  };
+  }, [error]);
 
   const showModal = (
     type: "info" | "warning" | "error" | "confirm",
@@ -65,16 +51,15 @@ const RankingPage = () => {
   const getCurrentRankings = (): RankingUser[] => {
     if (!leaderboardData) return [];
 
-    switch (activeTab) {
-      case "weekly":
-        return leaderboardData.weekly.rankings;
-      case "monthly":
-        return leaderboardData.monthly.rankings;
-      case "allTime":
-        return leaderboardData.allTime.rankings;
-      default:
-        return [];
-    }
+    const scope = activeScopeTab.toLowerCase() as 'local' | 'global';
+    const period = 'monthly'; // 고정: 월별 랭킹만 사용
+    
+    const key = `${scope}${period.charAt(0).toUpperCase() + period.slice(1)}` as keyof typeof leaderboardData;
+    
+    const rankingData = leaderboardData[key];
+    return rankingData && typeof rankingData === 'object' && 'rankings' in rankingData 
+      ? rankingData.rankings 
+      : [];
   };
 
   const getCurrentUserStats = (): UserRankingStats | null => {
@@ -135,9 +120,17 @@ const RankingPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white px-4 py-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Ranking</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">Monthly Ranking</h1>
+        <p className="text-sm text-gray-500 mb-4">Rankings reset on the 1st of each month</p>
 
-        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="mb-4">
+          <div className="text-sm font-medium text-gray-700 mb-2">Scope</div>
+          <Tabs 
+            tabs={scopeTabs} 
+            activeTab={activeScopeTab} 
+            onTabChange={(tab) => setActiveScopeTab(tab as RankingScope)} 
+          />
+        </div>
 
         <RankingHeaderCard
           rank={getCurrentUserRank()}
@@ -168,6 +161,9 @@ const RankingPage = () => {
                 </span>
               </div>
             </div>
+            <div className="mt-2 text-xs text-gray-500">
+              {activeScopeTab === 'LOCAL' ? '🏠 Local Rankings' : '🌍 Global Rankings'} • This Month
+            </div>
           </div>
         )}
       </div>
@@ -193,7 +189,12 @@ const RankingPage = () => {
 
         {getCurrentRankings().length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No ranking data available.</p>
+            <p className="text-gray-500">No ranking data available for this month.</p>
+            <p className="text-gray-400 text-sm mt-2">
+              {activeScopeTab === 'LOCAL' 
+                ? 'No users from your country have earned points this month.' 
+                : 'No global ranking data available for this month.'}
+            </p>
           </div>
         )}
 
