@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   UserProfileHeader,
   CarbonCreditCard,
   EcoTipCard,
   LearnMoreCard,
-  NotificationCenter,
   AiButton,
 } from "../components";
 import { useAndroidApi } from "../hooks";
@@ -16,7 +15,6 @@ import { HiSparkles, HiGlobeAlt } from "react-icons/hi";
 const HomePage = () => {
   const { updateBottomNavigation, showToast } = useAndroidApi();
   const navigate = useNavigate();
-  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [statistics, setStatistics] = useState<UserStatistics | null>(null);
   const [ecoTip, setEcoTip] = useState<EcoTip | null>(null);
@@ -56,14 +54,6 @@ const HomePage = () => {
     navigate("/education");
   };
 
-  const handleNotificationClick = () => {
-    setIsNotificationVisible(true);
-  };
-
-  const handleCloseNotification = () => {
-    setIsNotificationVisible(false);
-  };
-
   const getTreesPlanted = () => {
     if (!statistics) return 0;
     return Math.floor(statistics.totalMissionsCompleted / 5);
@@ -89,12 +79,6 @@ const HomePage = () => {
       <UserProfileHeader
         name={profile?.name || "Guest"}
         profileImageUrl={profile?.profileImageUrl}
-        onNotificationClick={handleNotificationClick}
-      />
-
-      <NotificationCenter
-        isVisible={isNotificationVisible}
-        onClose={handleCloseNotification}
       />
 
       <div className="px-4 pb-20">
@@ -113,6 +97,11 @@ const HomePage = () => {
             You planted {getWeeklyTreesPlanted()} trees this week
           </p>
           <div className="mt-3 flex items-center space-x-4 text-sm">
+            <div className="flex items-center space-x-1">
+              <span className="text-green-600 font-medium">
+                Level {statistics?.currentLevel || 1}
+              </span>
+            </div>
             <div className="flex items-center space-x-1">
               <span className="text-blue-600 font-medium">
                 {statistics?.totalCo2Reduction || 0}kg CO₂ saved

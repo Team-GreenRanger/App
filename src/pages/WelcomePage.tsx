@@ -5,7 +5,7 @@ const WelcomePage = () => {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    navigate('/onboarding');
+    navigate("/onboarding");
   };
   return (
     <div className="w-[393px] min-h-screen bg-gray-50 flex flex-col items-center justify-center mx-auto px-8 space-y-8">
@@ -24,7 +24,7 @@ const WelcomePage = () => {
       </div>
 
       {/* Get Started Button */}
-      <button 
+      <button
         onClick={handleGetStarted}
         className="bg-green-500 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-green-600 transition-colors"
       >

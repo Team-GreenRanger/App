@@ -9,7 +9,6 @@ export { default as Tabs } from "./Tabs";
 export { default as SearchBar } from "./SearchBar";
 export { default as DevNavbar } from "./DevNavbar";
 export { default as MissionCard } from "./MissionCard";
-export { default as NotificationCenter } from "./NotificationCenter";
 export { default as ToastModal } from "./ToastModal";
 export { default as AiButton } from "./AiButton";
 export { default as MissionSubmissionLoading } from "./MissionSubmissionLoading";
