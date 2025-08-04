@@ -2,21 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useAndroidApi, useMissions } from "../hooks";
 import { Tabs, MissionCard } from "../components";
 import { useNavigate } from "react-router-dom";
-import { UserMissionStatus, Mission, UserMission } from "../types";
+import { UserMission } from "../types";
 import { AlertCircle } from "lucide-react";
-
-interface MissionWithProgress {
-  mission: Mission;
-  userMission?: UserMission;
-  isCompleted: boolean;
-  progress: number;
-}
 
 const MissionsPage: React.FC = () => {
   const { updateBottomNavigation, showToast, vibrate } = useAndroidApi();
-  const { userMissions, missions, isLoading, error, loadUserMissions, loadMissions } = useMissions();
+  const { userMissions, isLoading, error, loadUserMissions, loadDailyMissions } = useMissions();
   const [activeTab, setActiveTab] = useState("active");
-  const [missionsWithProgress, setMissionsWithProgress] = useState<MissionWithProgress[]>([]);
   const navigate = useNavigate();
 
   const tabs = [
@@ -24,52 +16,30 @@ const MissionsPage: React.FC = () => {
     { id: "done", label: "Done" },
   ];
 
-  // 미션 데이터와 사용자 미션 데이터를 결합
-  useEffect(() => {
-    const combinedMissions: MissionWithProgress[] = [];
-    
-    // 사용자가 할당받은 미션들을 기준으로 데이터 결합
-    userMissions.forEach(userMission => {
-      const mission = missions.find(m => m.id === userMission.missionId);
-      if (mission) {
-        const isCompleted = userMission.status === UserMissionStatus.COMPLETED;
-        const progress = (userMission.currentProgress / userMission.targetProgress) * 100;
-        
-        combinedMissions.push({
-          mission,
-          userMission,
-          isCompleted,
-          progress
-        });
-      }
-    });
-    
-    setMissionsWithProgress(combinedMissions);
-  }, [userMissions, missions]);
-
   useEffect(() => {
     updateBottomNavigation("missions");
-    // 미션 데이터 로드
+    // 사용자 미션과 일일 미션 로드
     loadUserMissions();
-    loadMissions();
-  }, [updateBottomNavigation, loadUserMissions, loadMissions]);
+    loadDailyMissions();
+  }, [updateBottomNavigation, loadUserMissions, loadDailyMissions]);
 
-  const handleCameraClick = (missionWithProgress: MissionWithProgress) => {
+  const handleCameraClick = (userMission: UserMission) => {
     vibrate({ duration: 100 });
     showToast({ message: "Camera opened for mission verification!" });
     
-    // 미션 ID와 사용자 미션 ID를 함께 전달
-    navigate("/camera", {
+    // URL 파라미터로 missionId 전달
+    navigate(`/camera/${userMission.missionId}`, {
       state: {
-        missionId: missionWithProgress.mission.id,
-        userMissionId: missionWithProgress.userMission?.id,
-        missionTitle: missionWithProgress.mission.title
+        userMissionId: userMission.id,
+        missionTitle: userMission.mission?.title || "알 수 없는 미션"
       }
     });
   };
 
-  const activeMissions = missionsWithProgress.filter(m => !m.isCompleted);
-  const doneMissions = missionsWithProgress.filter(m => m.isCompleted);
+  // isActive와 isDone 사용해서 미션 구분
+  const activeMissions = userMissions.filter(um => um.isActive);
+  const doneMissions = userMissions.filter(um => um.isDone);
+  
   const currentMissions = activeTab === "active" ? activeMissions : doneMissions;
 
   return (
@@ -96,16 +66,16 @@ const MissionsPage: React.FC = () => {
         ) : (
           <>
             <div className="space-y-0">
-              {currentMissions.map((missionWithProgress) => (
+              {currentMissions.map((userMission, index) => (
                 <MissionCard
-                  key={missionWithProgress.userMission?.id || missionWithProgress.mission.id}
-                  title={missionWithProgress.mission.title}
-                  description={missionWithProgress.mission.description}
-                  co2Amount={`${missionWithProgress.mission.co2ReductionAmount}kg CO2`}
-                  current={missionWithProgress.userMission?.currentProgress || 0}
-                  total={missionWithProgress.userMission?.targetProgress || 1}
-                  isCompleted={missionWithProgress.isCompleted}
-                  onCameraClick={() => handleCameraClick(missionWithProgress)}
+                  key={userMission.id || index}
+                  title={userMission.mission?.title || "알 수 없는 미션"}
+                  description={userMission.mission?.description || ""}
+                  co2Amount={`${userMission.mission?.co2ReductionAmount || 0}kg CO2`}
+                  current={userMission.currentProgress}
+                  total={userMission.targetProgress}
+                  isCompleted={userMission.isDone}
+                  onCameraClick={() => handleCameraClick(userMission)}
                 />
               ))}
             </div>

@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   HashRouter as Router,
   Routes,
@@ -48,14 +48,10 @@ const NavigationController: React.FC = () => {
     isAvailable,
     log,
   } = useAndroidApi();
+  const [shouldShowReactNav, setShouldShowReactNav] = useState(false);
 
-  useEffect(() => {
-    if (!isAvailable) return;
-
-    const path = location.pathname;
-    log(`경로 변경: ${path}`);
-
-    // 네비게이션을 숨겸야 하는 페이지들
+  // 네비게이션을 숨겨야 하는 페이지 패턴들 체크
+  const shouldHideNavigation = (path: string): boolean => {
     const hiddenNavPages = [
       "/welcome",
       "/login",
@@ -66,26 +62,76 @@ const NavigationController: React.FC = () => {
       "/ai-chat",
     ];
 
-    if (hiddenNavPages.includes(path)) {
-      hideBottomNavigation();
-    } else {
-      // 메인 페이지에서는 네비게이션 표시 및 업데이트
-      showBottomNavigation();
+    // 정확한 경로 매칭
+    if (hiddenNavPages.includes(path)) return true;
 
-      // 페이지 ID 매핑
-      const pageMap: { [key: string]: string } = {
-        "/home": "home",
-        "/ranking": "ranking",
-        "/missions": "missions",
-        "/map": "map",
-        "/my": "my",
-      };
+    // 패턴 매칭 - 특정 경로로 시작하는 것들
+    const hiddenNavPatterns = [
+      "/auth/",
+      "/onboarding/",
+      "/camera/",
+      "/ai-chat/",
+      "/welcome/"
+    ];
 
-      const pageId = pageMap[path];
-      if (pageId) {
-        updateBottomNavigation(pageId);
+    return hiddenNavPatterns.some(pattern => path.startsWith(pattern));
+  };
+
+  useEffect(() => {
+    const handleNavigation = async () => {
+      const path = location.pathname;
+      log(`경로 변경: ${path}`);
+
+      const hideNav = shouldHideNavigation(path);
+
+      if (isAvailable) {
+        // 안드로이드 API 사용 가능한 경우
+        try {
+          if (hideNav) {
+            const hideResult = await hideBottomNavigation();
+            if (!hideResult) {
+              log('안드로이드 네비게이션 숨기기 실패');
+            }
+            setShouldShowReactNav(false);
+          } else {
+            const showResult = await showBottomNavigation();
+            if (!showResult) {
+              log('안드로이드 네비게이션 표시 실패');
+              setShouldShowReactNav(true); // 안드로이드 실패 시 React fallback 사용
+              return;
+            }
+            setShouldShowReactNav(false);
+
+            // 페이지 ID 매핑
+            const pageMap: { [key: string]: string } = {
+              "/home": "home",
+              "/ranking": "ranking",
+              "/missions": "missions",
+              "/map": "map",
+              "/my": "my",
+            };
+
+            const pageId = pageMap[path];
+            if (pageId) {
+              const updateResult = await updateBottomNavigation(pageId);
+              if (!updateResult) {
+                log(`안드로이드 네비게이션 업데이트 실패: ${pageId}`);
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('안드로이드 네비게이션 API 에러, React fallback 사용:', error);
+          log(`안드로이드 네비게이션 예외 발생: ${error}`);
+          // 안드로이드 API 에러 시 React fallback 사용
+          setShouldShowReactNav(!hideNav);
+        }
+      } else {
+        // 안드로이드 API 사용 불가능한 경우 React fallback 사용
+        setShouldShowReactNav(!hideNav);
       }
-    }
+    };
+
+    handleNavigation();
   }, [
     location.pathname,
     isAvailable,
@@ -126,7 +172,7 @@ const App: React.FC = () => {
           <Route path="/ai-chat" element={<AiChatPage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/missions" element={<MissionsPage />} />
-          <Route path="/camera" element={<CameraPage />} />
+          <Route path="/camera/:missionId" element={<CameraPage />} />
           <Route path="/mission-complete" element={<MissionCompletePage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/my" element={<MyPage />} />
@@ -150,7 +196,8 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
 
-        {isDevelopment && <DevNavbar />}
+        {/* 개발 모드이거나 안드로이드 API 사용 불가능한 경우 DevNavbar 표시 */}
+        {(isDevelopment || !isAvailable) && <DevNavbar />}
       </div>
     </Router>
   );

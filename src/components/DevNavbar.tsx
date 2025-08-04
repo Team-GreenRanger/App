@@ -1,10 +1,39 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { HiHome, HiStar, HiClipboardCheck, HiMap, HiUser } from 'react-icons/hi';
+import { useAndroidApi } from '../hooks';
 
 const DevNavbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAvailable } = useAndroidApi();
+
+  // 네비게이션을 숨겨야 하는 페이지 패턴들 체크
+  const shouldHideNavigation = (path: string): boolean => {
+    const hiddenNavPages = [
+      "/welcome",
+      "/login",
+      "/signup",
+      "/onboarding",
+      "/camera",
+      "/mission-complete",
+      "/ai-chat",
+    ];
+
+    // 정확한 경로 매칭
+    if (hiddenNavPages.includes(path)) return true;
+
+    // 패턴 매칭 - 특정 경로로 시작하는 것들
+    const hiddenNavPatterns = [
+      "/auth/",
+      "/onboarding/",
+      "/camera/",
+      "/ai-chat/",
+      "/welcome/"
+    ];
+
+    return hiddenNavPatterns.some(pattern => path.startsWith(pattern));
+  };
 
   const navItems = [
     {
@@ -41,9 +70,16 @@ const DevNavbar: React.FC = () => {
 
   const currentPath = location.pathname;
 
+  // 네비게이션을 숨겨야 하는 페이지인지 체크
+  if (shouldHideNavigation(currentPath)) {
+    return null;
+  }
+
   const handleNavClick = (path: string) => {
     navigate(path);
   };
+
+  const isDevelopment = import.meta.env.MODE === "development";
 
   return (
     <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 z-50">
@@ -74,8 +110,17 @@ const DevNavbar: React.FC = () => {
           );
         })}
       </div>
-      <div className="bg-orange-500 text-white text-center py-1">
-        <span className="text-xs font-medium">🔧 DEV MODE</span>
+      <div className={`text-white text-center py-1 ${
+        isDevelopment ? 'bg-orange-500' : !isAvailable ? 'bg-blue-500' : 'bg-green-500'
+      }`}>
+        <span className="text-xs font-medium">
+          {isDevelopment 
+            ? '🔧 DEV MODE' 
+            : !isAvailable 
+            ? '📱 REACT NAV' 
+            : '🔄 FALLBACK'
+          }
+        </span>
       </div>
     </div>
   );

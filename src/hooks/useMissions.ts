@@ -7,6 +7,7 @@ import {
   UserMissionStatus,
   AssignMissionRequest,
   SubmitMissionRequest,
+  SubmitMissionResponse,
 } from '../types';
 
 interface UseMissionsReturn {
@@ -19,7 +20,7 @@ interface UseMissionsReturn {
   loadUserMissions: (status?: UserMissionStatus) => Promise<void>;
   loadDailyMissions: () => Promise<void>;
   assignMission: (request: AssignMissionRequest) => Promise<UserMission | null>;
-  submitMission: (userMissionId: string, request: SubmitMissionRequest) => Promise<UserMission | null>;
+  submitMission: (userMissionId: string, request: SubmitMissionRequest) => Promise<SubmitMissionResponse | null>;
   clearError: () => void;
 }
 
@@ -91,7 +92,7 @@ export const useMissions = (): UseMissionsReturn => {
     }
   }, []);
 
-  const submitMission = useCallback(async (userMissionId: string, request: SubmitMissionRequest): Promise<UserMission | null> => {
+  const submitMission = useCallback(async (userMissionId: string, request: SubmitMissionRequest): Promise<SubmitMissionResponse | null> => {
     setIsLoading(true);
     setError(null);
 

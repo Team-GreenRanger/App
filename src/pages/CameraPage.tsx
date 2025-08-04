@@ -1,25 +1,32 @@
 import React, { useState, useRef, useCallback } from "react";
 import Webcam from "react-webcam";
 import { RotateCcw, ArrowLeft, Check, AlertCircle } from "lucide-react";
-import image from "../assets/images/image.svg";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useImageUpload, useMissions } from "../hooks";
+import { MissionSubmissionLoading } from "../components";
 
 const CameraPage = () => {
   const webcamRef = useRef<Webcam>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
-  const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingStage, setLoadingStage] = useState<'uploading' | 'submitting' | 'verifying' | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingMessage, setLoadingMessage] = useState("");
   
   const navigate = useNavigate();
   const location = useLocation();
+  const { missionId } = useParams<{ missionId: string }>();
   const { uploadMissionImages, convertDataURLToFile, isUploading, error: uploadError } = useImageUpload();
-  const { submitMission, error: missionError } = useMissions();
+  const { submitMission, assignMission, error: missionError } = useMissions();
   
-  // 미션 정보를 location state에서 가져오기
-  const { missionId, userMissionId, missionTitle } = location.state || {};
+  // URL 파라미터에서 missionId를 받아오고, location.state에서 추가 정보 받아오기
+  const { userMissionId, missionTitle } = location.state || {};
+  
+  if (!missionId) {
+    navigate('/missions');
+    return null;
+  }
 
   const videoConstraints = {
     width: 1280,
@@ -44,68 +51,166 @@ const CameraPage = () => {
     setCapturedImage(null);
   };
 
+  // 이미지 압축 함수 (화질 50% 감소)
+  const compressImage = (dataURL: string, quality: number = 0.5): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // 원본 크기의 50%로 리사이징
+        canvas.width = img.width * 0.5;
+        canvas.height = img.height * 0.5;
+        
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // JPEG 형식으로 quality 적용하여 압축
+        const compressedDataURL = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedDataURL);
+      };
+      
+      img.src = dataURL;
+    });
+  };
+
   const sendToAI = async () => {
-    if (!capturedImage || !userMissionId) {
-      alert("사진을 촬영하고 미션 정보가 필요합니다.");
+    if (!capturedImage) {
+      alert("사진을 촬영해주세요.");
       return;
     }
 
     setIsSubmitting(true);
+    setLoadingStage('uploading');
+    setLoadingProgress(10);
+    setLoadingMessage('이미지를 압축하고 있습니다...');
 
     try {
-      // 이미지를 File 객체로 변환
-      const file = convertDataURLToFile(capturedImage, `mission-${userMissionId}-${Date.now()}.jpg`);
+      // 이미지 압축 (화질 50% 감소)
+      const compressedImage = await compressImage(capturedImage, 0.5);
+      
+      // 압축된 이미지를 File 객체로 변환
+      const file = convertDataURLToFile(compressedImage, `mission-${missionId}-${Date.now()}.jpg`);
+      
+      setLoadingProgress(30);
+      setLoadingMessage('서버에 이미지를 업로드하고 있습니다...');
       
       // 이미지 업로드
       const uploadResult = await uploadMissionImages([file]);
       
       if (uploadResult) {
-        // 미션 제출
-        const missionResult = await submitMission(userMissionId, {
-          imageUrls: uploadResult.files.map(f => f.url),
-          note: note.trim() || undefined
-        });
+        setLoadingProgress(60);
+        setLoadingStage('submitting');
+        setLoadingMessage('미션을 제출하고 있습니다...');
         
-        if (missionResult) {
-          // 성공 시 미션 완료 페이지로 이동
-          navigate("/mission-complete", {
-            state: {
-              missionTitle,
-              isApproved: missionResult.status === 'APPROVED' || missionResult.status === 'COMPLETED'
-            }
+        // userMissionId가 있으면 기존 방식으로 미션 제출
+        if (userMissionId) {
+          setLoadingStage('verifying');
+          setLoadingProgress(80);
+          setLoadingMessage('AI가 미션을 검증하고 있습니다...');
+          
+          const missionResult = await submitMission(userMissionId, {
+            imageUrls: uploadResult.files.map(f => f.url)
           });
+          
+          if (missionResult) {
+            setLoadingProgress(100);
+            setLoadingMessage('미션 검증이 완료되었습니다!');
+            
+            // 잠시 대기 후 결과 페이지로 이동
+            setTimeout(() => {
+              // 검증 성공 여부 판단 로직 개선
+              const isVerified = missionResult.verifiedAt !== null;
+              const isRejected = missionResult.status === 'REJECTED';
+              const isApproved = isVerified && !isRejected;
+              const isFullyCompleted = missionResult.isFullyCompleted || missionResult.status === 'COMPLETED';
+              const remainingSubmissions = missionResult.remainingSubmissions || 0;
+              const points = missionResult.points || 0;
+              
+              navigate("/mission-complete", {
+                state: {
+                  missionTitle,
+                  isApproved,
+                  isFullyCompleted,
+                  remainingSubmissions,
+                  points,
+                  currentProgress: missionResult.currentProgress,
+                  targetProgress: missionResult.targetProgress,
+                  isRejected,
+                }
+              });
+            }, 1000);
+          } else {
+            throw new Error("미션 제출에 실패했습니다.");
+          }
         } else {
-          alert("미션 제출에 실패했습니다. 다시 시도해주세요.");
+          // userMissionId가 없어도 미션을 할당하고 제출까지 처리
+          setLoadingProgress(70);
+          setLoadingMessage('미션을 할당하고 있습니다...');
+          
+          // 미션 할당
+          const assignedMission = await assignMission({
+            missionId: missionId!,
+            targetProgress: 1
+          });
+          
+          if (!assignedMission || !assignedMission.id) {
+            throw new Error("미션 할당에 실패했습니다.");
+          }
+          
+          const targetUserMissionId = assignedMission.id;
+          
+          setLoadingStage('verifying');
+          setLoadingProgress(85);
+          setLoadingMessage('AI가 미션을 검증하고 있습니다...');
+          
+          // 할당된 미션으로 제출
+          const missionResult = await submitMission(targetUserMissionId, {
+            imageUrls: uploadResult.files.map(f => f.url)
+          });
+          
+          if (missionResult) {
+            setLoadingProgress(100);
+            setLoadingMessage('미션 검증이 완료되었습니다!');
+            
+            setTimeout(() => {
+              // 검증 성공 여부 판단 로직 개선
+              const isVerified = missionResult.verifiedAt !== null;
+              const isRejected = missionResult.status === 'REJECTED';
+              const isApproved = isVerified && !isRejected;
+              const isFullyCompleted = missionResult.isFullyCompleted || missionResult.status === 'COMPLETED';
+              const remainingSubmissions = missionResult.remainingSubmissions || 0;
+              const points = missionResult.points || 0;
+              
+              navigate("/mission-complete", {
+                state: {
+                  missionTitle,
+                  isApproved,
+                  isFullyCompleted,
+                  remainingSubmissions,
+                  points,
+                  currentProgress: missionResult.currentProgress,
+                  targetProgress: missionResult.targetProgress,
+                  isRejected,
+                }
+              });
+            }, 1000);
+          } else {
+            throw new Error("미션 제출에 실패했습니다.");
+          }
         }
       } else {
-        alert("이미지 업로드에 실패했습니다. 다시 시도해주세요.");
+        throw new Error("이미지 업로드에 실패했습니다.");
       }
     } catch (error) {
       console.error('Mission submission error:', error);
-      alert("미션 제출 중 오류가 발생했습니다.");
+      alert(error instanceof Error ? error.message : "미션 제출 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
+      setLoadingStage(null);
+      setLoadingProgress(0);
+      setLoadingMessage("");
     }
-  };
-
-  const selectFromGallery = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setCapturedImage(e.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-    event.target.value = "";
   };
 
   const goBack = () => {
@@ -114,13 +219,14 @@ const CameraPage = () => {
 
   return (
       <div className="w-full max-w-md mx-auto bg-gray-900 text-white min-h-screen relative">
-        <input
-            type="file"
-            ref={fileInputRef}
-            accept="image/*"
-            onChange={handleFileSelect}
-            className="hidden"
-        />
+        {/* 로딩 모달 */}
+        {loadingStage && (
+          <MissionSubmissionLoading 
+            stage={loadingStage}
+            progress={loadingProgress}
+            message={loadingMessage}
+          />
+        )}
 
         {/* 헤더 */}
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gray-800 bg-opacity-90">
@@ -164,33 +270,8 @@ const CameraPage = () => {
             </div>
           )}
           
-          {/* 사진이 촬영된 경우 노트 입력 필드 */}
-          {capturedImage && (
-            <div className="p-4 border-b border-gray-700">
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Add a note about your mission (optional)"
-                className="w-full p-3 bg-gray-700 text-white rounded-lg resize-none"
-                rows={2}
-                maxLength={200}
-              />
-              <div className="text-right text-xs text-gray-400 mt-1">
-                {note.length}/200
-              </div>
-            </div>
-          )}
-          
           <div className="p-6">
-            <div className="flex items-center justify-between">
-              {/* 갤러리 버튼 */}
-              <div
-                  className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-600 transition-colors"
-                  onClick={selectFromGallery}
-              >
-                <img src={image} alt="Gallery" />
-              </div>
-
+            <div className="flex items-center justify-center">
             {/* 촬영 버튼 */}
             <div className="relative">
               {capturedImage ? (
@@ -228,7 +309,7 @@ const CameraPage = () => {
             <button
                 onClick={switchCamera}
                 disabled={capturedImage || isSubmitting || isUploading}
-                className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed absolute bottom-6 right-6"
             >
               <RotateCcw className="w-6 h-6" />
             </button>

@@ -6,6 +6,7 @@ import {
   UserMissionStatus,
   AssignMissionRequest,
   SubmitMissionRequest,
+  SubmitMissionResponse,
   VerifyMissionRequest,
   MissionListResponse,
   UserMissionListResponse,
@@ -46,8 +47,8 @@ class MissionApiService {
     return response.data;
   }
 
-  async submitMission(userMissionId: string, request: SubmitMissionRequest): Promise<UserMission> {
-    const response = await privateApi.patch<UserMission>(`/missions/user-missions/${userMissionId}/submit`, request);
+  async submitMission(userMissionId: string, request: SubmitMissionRequest): Promise<SubmitMissionResponse> {
+    const response = await privateApi.patch<SubmitMissionResponse>(`/missions/user-missions/${userMissionId}/submit`, request);
     return response.data;
   }
 
