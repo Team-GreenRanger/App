@@ -164,7 +164,7 @@ const SignupPage = () => {
 
     const age = parseInt(formData.age);
     if (isNaN(age) || age < 0 || age > 120) {
-      showModal("warning", "Input Error", "Please enter a valid age (13-120).");
+      showModal("warning", "Input Error", "Please enter a valid age (0-120).");
       return false;
     }
 
