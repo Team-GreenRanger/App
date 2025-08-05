@@ -290,9 +290,9 @@ const MyPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="bg-white">
-        <div className="px-6 pt-12 pb-8">
+    <div className="min-h-screen bg-gray-50 pb-0">
+      <div className="bg-gray-50">
+        <div className="px-3 pt-12 pb-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1 min-w-0">
               <div className="flex items-center mb-3">
@@ -406,7 +406,7 @@ const MyPage: React.FC = () => {
                 />
               </div>
 
-              <div className="mt-6">
+              <div className="mt-0">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">
                   Carbon Credit
                 </h3>
@@ -420,63 +420,19 @@ const MyPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-6 py-6 space-y-4">
-        <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Settings className="w-5 h-5 mr-2" />
+      <div className="px-4 py-6 space-y-4">
+        <div className="overflow-hidden">
+          <div className="">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center mb-4">
               Account Settings
             </h2>
           </div>
 
           <div className="divide-y divide-gray-100">
-            {showAndroidFeatures && isAvailable && (
-              <div className="px-6 py-4 bg-gray-50 space-y-3">
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleCopyToClipboard}
-                    className="flex-1 bg-green-500 text-white py-2 px-3 rounded-lg hover:bg-green-600 transition-colors text-sm flex items-center justify-center gap-1"
-                  >
-                    <Copy className="w-4 h-4" />
-                    Copy Profile
-                  </button>
-                  <button
-                    onClick={handleGetClipboard}
-                    className="flex-1 bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600 transition-colors text-sm flex items-center justify-center gap-1"
-                  >
-                    <Copy className="w-4 h-4" />
-                    Check Clipboard
-                  </button>
-                </div>
-
-                <button
-                  onClick={handleShare}
-                  className="w-full bg-emerald-500 text-white py-2 px-3 rounded-lg hover:bg-emerald-600 transition-colors text-sm flex items-center justify-center gap-1"
-                >
-                  <Share2 className="w-4 h-4" />
-                  Share Achievement
-                </button>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Screen Brightness
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="255"
-                    value={brightness}
-                    onChange={handleBrightnessChange}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <p className="text-xs text-gray-600">Current: {brightness}</p>
-                </div>
-              </div>
-            )}
 
             <button
               onClick={() => setShowPasswordModal(true)}
-              className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              className="w-full px-4 py-4 flex items-center justify-between bg-white rounded-2xl transition-colors mb-4"
             >
               <div className="flex items-center">
                 <Lock className="w-5 h-5 text-gray-400 mr-3" />
@@ -487,7 +443,7 @@ const MyPage: React.FC = () => {
 
             <button
               onClick={() => setShowDeactivateModal(true)}
-              className="w-full px-6 py-4 flex items-center justify-between hover:bg-red-50 transition-colors text-red-600"
+              className="w-full px-4 py-4 flex items-center justify-between bg-white rounded-2xl transition-colors text-red-600 mb-4"
             >
               <div className="flex items-center">
                 <Trash2 className="w-5 h-5 mr-3" />
@@ -498,7 +454,7 @@ const MyPage: React.FC = () => {
 
             <button
               onClick={handleLogout}
-              className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              className="w-full px-4 py-4 flex items-center justify-between bg-white rounded-2xl transition-colors mb-4"
             >
               <div className="flex items-center">
                 <LogOut className="w-5 h-5 text-gray-400 mr-3" />
@@ -508,50 +464,6 @@ const MyPage: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {statistics && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Account Information
-            </h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Member Since</span>
-                <span className="text-gray-900">
-                  {statistics.daysSinceJoined || 0} days ago
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Account Status</span>
-                <span
-                  className={`${
-                    profile?.status === "ACTIVE"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {profile?.status === "ACTIVE" ? "Active" : "Inactive"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Verification Status</span>
-                <span
-                  className={`${
-                    profile?.isVerified ? "text-green-600" : "text-orange-600"
-                  }`}
-                >
-                  {profile?.isVerified ? "Verified" : "Not Verified"}
-                </span>
-              </div>
-              {isAvailable && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Platform</span>
-                  <span className="text-blue-600">Android</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
         <div className="text-center py-6 border-t border-gray-100">
           <div className="flex items-center justify-center gap-1 text-gray-500 text-sm">

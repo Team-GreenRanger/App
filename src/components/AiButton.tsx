@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import sparkle from "../assets/images/sparkles.svg";
 import { useNavigate } from "react-router-dom";
-import { Bot, Camera } from "lucide-react";
+import { Bot, Camera, X } from "lucide-react";
 
 interface MenuOption {
   id: string;
@@ -14,6 +14,7 @@ const AiButton = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
 
   // 메뉴 옵션 정의
   const menuOptions: MenuOption[] = [
@@ -31,8 +32,7 @@ const AiButton = () => {
       label: "Recycle Tip",
       icon: <Camera className="w-5 h-5" />,
       onClick: () => {
-        // TODO: 쓰레기 분리수거 AI 분석 페이지로 이동
-        console.log("Recycle Tip clicked - AI 분석 기능 예정");
+        navigate("/ai-trash-camera");
         setIsMenuOpen(false);
       },
     },
@@ -55,46 +55,117 @@ const AiButton = () => {
     };
   }, [isMenuOpen]);
 
+  // 메뉴 상태에 따른 body 스타일 변경
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMenuOpen]);
+
   const handleButtonClick = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  return (
-    <div ref={menuRef} className="fixed bottom-36 right-4 z-50">
-      {/* 드롭업 메뉴 */}
-      {isMenuOpen && (
-        <div className="absolute bottom-20 right-0 mb-2 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 min-w-[160px] animate-in slide-in-from-bottom-2 duration-200">
-          {menuOptions.map((option, index) => (
-            <button
-              key={option.id}
-              onClick={option.onClick}
-              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-            >
-              <div className="text-gray-600">{option.icon}</div>
-              <span className="text-gray-800 font-medium text-sm">
-                {option.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
+  const handleBackdropClick = () => {
+    setIsMenuOpen(false);
+  };
 
-      {/* AI 버튼 */}
-      <button
-        onClick={handleButtonClick}
-        className={`w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-green-400 flex justify-center items-center shadow-[3px_3px_12px_2px_rgba(0,_0,_0,_0.1)] transition-transform ${
-          isMenuOpen ? "scale-110" : "hover:scale-105"
-        }`}
-      >
-        <img 
-          src={sparkle} 
-          alt="AI" 
-          className={`transition-transform ${
-            isMenuOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-    </div>
+  return (
+      <>
+        {/* 배경 오버레이 */}
+        {isMenuOpen && (
+            <div
+                ref={backdropRef}
+                onClick={handleBackdropClick}
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  backdropFilter: 'blur(4px)',
+                  WebkitBackdropFilter: 'blur(4px)',
+                  zIndex: 40,
+                  animation: 'fadeIn 0.2s ease-out',
+                }}
+            />
+        )}
+
+        <div ref={menuRef} className="fixed bottom-36 right-4 z-50">
+          {/* 드롭업 메뉴 */}
+          {isMenuOpen && (
+              <div
+                  className="absolute bottom-20 right-0 mb-2 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 min-w-[160px]"
+                  style={{ animation: 'slideUp 0.2s ease-out' }}
+              >
+                {menuOptions.map((option, index) => (
+                    <button
+                        key={option.id}
+                        onClick={option.onClick}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                    >
+                      <div className="text-gray-600">{option.icon}</div>
+                      <span className="text-gray-800 font-medium text-sm">
+                  {option.label}
+                </span>
+                    </button>
+                ))}
+              </div>
+          )}
+
+          {/* AI 버튼 */}
+          <button
+              onClick={handleButtonClick}
+              className={`w-16 h-16 rounded-full flex justify-center items-center shadow-[3px_3px_12px_2px_rgba(0,_0,_0,_0.1)] transition-all duration-200 ${
+                  isMenuOpen
+                      ? "scale-110 bg-gray-400"
+                      : "hover:scale-105 bg-gradient-to-br from-cyan-400 to-green-400"
+              }`}
+          >
+            {isMenuOpen ? (
+                <X
+                    className="w-6 h-6 text-black"
+                    strokeWidth={2.5}
+                />
+            ) : (
+                <img
+                    src={sparkle}
+                    alt="AI"
+                    className=""
+                />
+            )}
+          </button>
+        </div>
+
+        <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes slideUp {
+          from {
+            transform: translateY(10px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
+      </>
   );
 };
 

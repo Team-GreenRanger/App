@@ -33,6 +33,10 @@ import LearningPageViewer from "./pages/LearningPageViewer";
 import CameraPage from "./pages/CameraPage";
 import MissionCompletePage from "./pages/MissionCompletePage";
 
+// AI 쓰레기 분리수거 관련 페이지 임포트
+import AiTrashCameraPage from "./pages/AiTrashCameraPage";
+import AiTrashResult from "./pages/AiTrashResult";
+
 const AuthRedirect: React.FC = () => {
   const loggedIn = isLoggedIn();
   return <Navigate to={loggedIn ? "/home" : "/welcome"} replace />;
@@ -59,6 +63,8 @@ const NavigationController: React.FC = () => {
       "/camera",
       "/mission-complete",
       "/ai-chat",
+      "/ai-trash-camera", // AI 쓰레기 카메라 페이지
+      "/ai-trash-result", // AI 쓰레기 결과 페이지
     ];
 
     // 정확한 경로 매칭
@@ -70,7 +76,8 @@ const NavigationController: React.FC = () => {
       "/onboarding/",
       "/camera/",
       "/ai-chat/",
-      "/welcome/"
+      "/welcome/",
+      "/ai-trash-", // AI 쓰레기 관련 모든 페이지
     ];
 
     return hiddenNavPatterns.some(pattern => path.startsWith(pattern));
@@ -167,55 +174,52 @@ const App: React.FC = () => {
   }, [log, isAvailable]);
 
   return (
-    <Router>
-      <div className="max-w-md mx-auto bg-gray-50 min-h-screen relative">
-        <NavigationController />
-        <Routes>
-          <Route path="/welcome" element={<WelcomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route path="/" element={<AuthRedirect />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/ai-chat" element={<AiChatPage />} />
-          <Route path="/ranking" element={<RankingPage />} />
-          <Route path="/missions" element={<MissionsPage />} />
-          <Route path="/camera/:missionId" element={<CameraPage />} />
-          <Route path="/mission-complete" element={<MissionCompletePage />} />
-          <Route path="/map" element={<MapPage />} />
-          <Route path="/my" element={<MyPage />} />
-          <Route path="/my/credit" element={<MyCarbonCreditPage />} />
-          <Route path="/my/credit/reward-shop" element={<RewardShopPage />} />
-          <Route path="/my/credit/my-rewards" element={<MyRewardsPage />} />
-          <Route
-            path="/my/credit/usage-history"
-            element={<CreditUsageHistoryPage />}
-          />
-          <Route path="/education" element={<EducationPage />} />
-          <Route
-            path="/education/climate-change"
-            element={<LearningPageViewer categoryId="climate-change" />}
-          />
-          <Route
-            path="/education/extreme-weather"
-            element={<LearningPageViewer categoryId="extreme-weather" />}
-          />
-          <Route
-            path="/education/climate-change/:topicId"
-            element={<LearningPageViewer categoryId="climate-change" />}
-          />
-          <Route
-            path="/education/extreme-weather/:topicId"
-            element={<LearningPageViewer categoryId="extreme-weather" />}
-          />
+      <Router>
+        <div className="max-w-md mx-auto bg-gray-50 min-h-screen relative">
+          <NavigationController />
+          <Routes>
+            {/* 기본 라우트 */}
+            <Route path="/welcome" element={<WelcomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/" element={<AuthRedirect />} />
 
-          <Route path="*" element={<Navigate to="/home" replace />} />
-        </Routes>
+            {/* 메인 앱 라우트 */}
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/ai-chat" element={<AiChatPage />} />
+            <Route path="/ranking" element={<RankingPage />} />
+            <Route path="/missions" element={<MissionsPage />} />
+            <Route path="/camera/:missionId" element={<CameraPage />} />
+            <Route path="/mission-complete" element={<MissionCompletePage />} />
+            <Route path="/map" element={<MapPage />} />
+            <Route path="/my" element={<MyPage />} />
 
-        {/* 개발 모드이거나 안드로이드 API 사용 불가능한 경우 DevNavbar 표시 */}
-        {(isDevelopment || !isAvailable) && <DevNavbar />}
-      </div>
-    </Router>
+            {/* My 페이지 하위 라우트 */}
+            <Route path="/my/credit" element={<MyCarbonCreditPage />} />
+            <Route path="/my/credit/reward-shop" element={<RewardShopPage />} />
+            <Route path="/my/credit/my-rewards" element={<MyRewardsPage />} />
+            <Route path="/my/credit/usage-history" element={<CreditUsageHistoryPage />} />
+
+            {/* 교육 라우트 */}
+            <Route path="/education" element={<EducationPage />} />
+            <Route path="/education/climate-change" element={<LearningPageViewer categoryId="climate-change" />} />
+            <Route path="/education/extreme-weather" element={<LearningPageViewer categoryId="extreme-weather" />} />
+            <Route path="/education/climate-change/:topicId" element={<LearningPageViewer categoryId="climate-change" />} />
+            <Route path="/education/extreme-weather/:topicId" element={<LearningPageViewer categoryId="extreme-weather" />} />
+
+            {/* AI 쓰레기 분리수거 라우트 */}
+            <Route path="/ai-trash-camera" element={<AiTrashCameraPage />} />
+            <Route path="/ai-trash-result" element={<AiTrashResult />} />
+
+            {/* 404 처리 */}
+            <Route path="*" element={<Navigate to="/home" replace />} />
+          </Routes>
+
+          {/* 개발 모드이거나 안드로이드 API 사용 불가능한 경우 DevNavbar 표시 */}
+          {(isDevelopment || !isAvailable) && <DevNavbar />}
+        </div>
+      </Router>
   );
 };
 
