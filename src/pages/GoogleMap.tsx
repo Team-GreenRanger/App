@@ -8,7 +8,6 @@ interface GoogleMapProps {
 function GoogleMap({ onMapLoad, currentLocation }: GoogleMapProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [googleMap, setGoogleMap] = useState<google.maps.Map>();
-  const [currentLocationMarker, setCurrentLocationMarker] = useState<google.maps.marker.AdvancedMarkerElement>();
 
   useEffect(() => {
     if (ref.current && !googleMap) {
@@ -48,35 +47,6 @@ function GoogleMap({ onMapLoad, currentLocation }: GoogleMapProps) {
   useEffect(() => {
     if (googleMap && currentLocation) {
       googleMap.setCenter(currentLocation);
-      
-      if (currentLocationMarker) {
-        currentLocationMarker.map = null;
-      }
-
-      try {
-        const marker = new google.maps.marker.AdvancedMarkerElement({
-          position: currentLocation,
-          map: googleMap,
-          title: "Your Location",
-        });
-
-        setCurrentLocationMarker(marker);
-      } catch (error) {
-        console.warn("AdvancedMarkerElement not available, using regular marker");
-        const fallbackMarker = new google.maps.Marker({
-          position: currentLocation,
-          map: googleMap,
-          title: "Your Location",
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 10,
-            fillColor: "#4285F4",
-            fillOpacity: 1,
-            strokeColor: "#ffffff",
-            strokeWeight: 3,
-          },
-        });
-      }
     }
   }, [googleMap, currentLocation]);
 
