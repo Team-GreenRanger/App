@@ -29,7 +29,7 @@ import AiWelcome from "./components/AiWelcomeSection";
 import AiWelcomeSection from "./components/AiWelcomeSection";
 import EducationPage from "./pages/EducationPage";
 import LearningPageViewer from "./pages/LearningPageViewer";
-import LearningPage from "./pages/LearningPage";
+
 import CameraPage from "./pages/CameraPage";
 import MissionCompletePage from "./pages/MissionCompletePage";
 
@@ -199,7 +199,7 @@ const App: React.FC = () => {
             path="/education/extreme-weather/:topicId"
             element={<LearningPageViewer categoryId="extreme-weather" />}
           />
-          <Route path="/education/learning-page" element={<LearningPage />} />
+
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
 
