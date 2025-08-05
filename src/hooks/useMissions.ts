@@ -85,7 +85,12 @@ export const useMissions = (): UseMissionsReturn => {
       
       return userMission;
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || '미션 할당 중 오류가 발생했습니다.');
+      // 409 Conflict: 이미 완료된 미션
+      if (err.response?.status === 409) {
+        setError('이 미션은 이미 완료되었습니다.');
+      } else {
+        setError(err.response?.data?.message || err.message || '미션 할당 중 오류가 발생했습니다.');
+      }
       return null;
     } finally {
       setIsLoading(false);

@@ -65,8 +65,8 @@ const MissionComplete = ({
         )}
       </div>
 
-      {/* 포인트 표시 (완전 완료시만) */}
-      {isFullyComplete && points && (
+      {/* 포인트 표시 (완전 완료시만 그리고 points > 0일 때만) */}
+      {isFullyComplete && points && points > 0 && (
         <div className="text-center mb-8">
           <p className="text-4xl font-bold text-green-500">+{points} points</p>
           <p className="text-sm text-gray-500 mt-2">Carbon credits earned!</p>

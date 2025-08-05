@@ -4,79 +4,59 @@ import { Tabs, MissionCard } from "../components";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { missionApi } from "../api/missionApi";
-
-// 실제 API 응답 구조에 맞춘 타입 정의
-interface Mission {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  difficulty: string;
-  co2ReductionAmount: string;
-  creditReward: number;
-  requiredSubmissions: number;
-  imageUrl: string;
-  instructions: string[];
-  verificationCriteria: string[];
-  status: string;
-  createdAt: string;
-}
-
-interface MissionData {
-  isActive: boolean;
-  isDone: boolean;
-  progressPercentage: number | null;
-  remainingSubmissions: number | null;
-  mission: Mission;
-}
-
-interface ApiResponse {
-  missions: MissionData[];
-  summary: {
-    totalMissions: number;
-    completedMissions: number;
-    activeMissions: number;
-    pendingMissions: number;
-    completionRate: number;
-  };
-}
+import { UserMission } from "../types";
 
 const MissionsPage: React.FC = () => {
   const { updateBottomNavigation, showToast, vibrate } = useAndroidApi();
-  const [missions, setMissions] = useState<MissionData[]>([]);
+  const [missions, setMissions] = useState<UserMission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("active");
   const navigate = useNavigate();
 
-  // API 데이터 로드 함수
+  // API 데이터 로드 함수 - Daily Missions 사용으로 변경
   const loadMissions = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      // 실제 API 호출
-      const response = await missionApi.getUserMissions();
+      console.log('🚀 Daily Missions API 호출 시작...'); // 디버깅
       
-      // API 응답이 제공해주신 구조라고 가정
-      // response가 { missions: [], summary: {} } 구조인지 확인
-      let missions: MissionData[];
+      // Daily Missions API 사용 - 자동으로 미션 할당
+      const missions = await missionApi.getDailyMissions();
       
-      if (Array.isArray(response)) {
-        // response가 배열이면 그대로 사용
-        missions = response;
-      } else if (response && Array.isArray(response.missions)) {
-        // response가 { missions: [], summary: {} } 구조면 missions 배열 사용
-        missions = response.missions;
-      } else {
-        // 예상치 못한 구조
-        throw new Error('예상치 못한 API 응답 구조');
-      }
+      console.log('🎉 Daily Missions API 성공:', missions); // 디버깅
+      console.log('📊 받은 미션 수:', missions.length);
+      
+      // 미션 데이터 검증
+      missions.forEach((mission, index) => {
+        console.log(`미션 ${index + 1}:`, {
+          id: mission.id,
+          title: mission.mission?.title || '제목 없음',
+          status: mission.status,
+          isActive: mission.isActive,
+          isDone: mission.isDone,
+          currentProgress: mission.currentProgress,
+          requiredSubmissions: mission.mission?.requiredSubmissions || 'N/A'
+        });
+      });
       
       setMissions(missions);
-    } catch (err) {
-      setError('미션 데이터를 불러오는데 실패했습니다.');
-      console.error('Mission loading error:', err);
+    } catch (err: any) {
+      console.error('❌ Daily Missions API 실패:', err);
+      console.error('❌ 에러 메시지:', err.message);
+      console.error('❌ 에러 응답:', err.response?.data);
+      console.error('❌ 에러 상태 코드:', err.response?.status);
+      
+      if (err.response?.status === 401) {
+        setError('로그인이 필요합니다. 다시 로그인해주세요.');
+      } else if (err.response?.status === 404) {
+        setError('미션 서비스를 찾을 수 없습니다.');
+      } else if (err.message?.includes('No active missions')) {
+        setError('현재 사용 가능한 미션이 없습니다. 관리자에게 문의해주세요.');
+      } else {
+        setError(`미션 데이터를 불러오는데 실패했습니다: ${err.message}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -92,16 +72,16 @@ const MissionsPage: React.FC = () => {
     loadMissions();
   }, [updateBottomNavigation]);
 
-  const handleCameraClick = (missionData: MissionData) => {
+  const handleCameraClick = (userMission: UserMission) => {
     vibrate({ duration: 100 });
     showToast({ message: "카메라가 열렸습니다!" });
     
     // URL 파라미터로 missionId 전달
-    navigate(`/camera/${missionData.mission.id}`, {
+    navigate(`/camera/${userMission.mission.id}`, {
       state: {
-        missionId: missionData.mission.id,
-        missionTitle: missionData.mission.title,
-        remainingSubmissions: missionData.remainingSubmissions
+        missionId: userMission.mission.id,
+        missionTitle: userMission.mission.title,
+        remainingSubmissions: userMission.remainingSubmissions
       }
     });
   };
@@ -116,6 +96,23 @@ const MissionsPage: React.FC = () => {
     <div className="min-h-screen bg-white">
       <div className="bg-white px-4 py-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Missions</h1>
+        
+        {/* 간단한 카운트 정보만 표시 */}
+        <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
+          <span>Active: {activeMissions.length}</span>
+          <span>•</span>
+          <span>Completed: {doneMissions.length}</span>
+        </div>
+        
+        {/* Daily Missions 새로고침만 제공 */}
+        <div className="flex gap-2 mb-4">
+          <button 
+            onClick={() => loadMissions()}
+            className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+          >
+            Daily Missions 새로고침
+          </button>
+        </div>
 
         <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
@@ -144,11 +141,11 @@ const MissionsPage: React.FC = () => {
         ) : (
           <>
             <div className="space-y-0">
-              {currentMissions.map((missionData, index) => (
+              {currentMissions.map((userMission, index) => (
                 <MissionCard
-                  key={missionData.mission.id || index}
-                  missionData={missionData}
-                  onCameraClick={() => handleCameraClick(missionData)}
+                  key={userMission.id || index}
+                  userMission={userMission}
+                  onCameraClick={() => handleCameraClick(userMission)}
                 />
               ))}
             </div>

@@ -34,7 +34,7 @@ class PrivateApiService {
       (error) => {
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
-          window.location.href = '/login';
+          window.location.href = '#/login'; // 해시라우터 형식
         }
         console.error('API Error:', error);
         return Promise.reject(error);

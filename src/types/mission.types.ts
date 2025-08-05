@@ -50,7 +50,6 @@ export interface UserMission {
   missionId: string;
   status: UserMissionStatus;
   currentProgress: number; // 완료한 횟수
-  targetProgress: number; // 총 해야할 횟수  
   submissionImageUrls: string[];
   submissionNote?: string;
   verificationNote?: string;
@@ -76,7 +75,6 @@ export interface MissionWithDetails extends Mission {
 
 export interface AssignMissionRequest {
   missionId: string;
-  targetProgress?: number;
 }
 
 export interface SubmitMissionRequest {
