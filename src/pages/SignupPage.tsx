@@ -41,7 +41,7 @@ interface CountryData {
 }
 
 const DEFAULT_PROFILE_IMAGE =
-  "https://skrr.zerotravel.kr/uploads/7c3d1b97-9d4c-47f6-9f26-46f8d9db9bc9-ecolife image.png";
+  "https://skrr.zerotravel.kr/uploads/4271731b-715e-4067-8276-58b2d69ab6c4-ecolife image.png";
 
 const SignupPage = () => {
   const navigate = useNavigate();
