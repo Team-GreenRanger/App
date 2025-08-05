@@ -1,6 +1,7 @@
 import React from 'react';
 import { Upload, Clock, CheckCircle, Sparkles } from 'lucide-react';
 import loadingImage from '../assets/images/loading.png';
+import loadingGif from '../assets/images/9oNLGsM5ARfPrfZWVvvI.gif';
 
 interface MissionSubmissionLoadingProps {
   stage: 'uploading' | 'submitting' | 'verifying';
@@ -33,7 +34,7 @@ const MissionSubmissionLoading: React.FC<MissionSubmissionLoadingProps> = ({
         };
       case 'verifying':
         return {
-          icon: <img src={loadingImage} alt="Loading" className="w-8 h-8 animate-spin" />,
+          icon: <img src={loadingGif} alt="Loading" className="w-48 h-auto max-w-none" />,
           title: 'AI 검증 중...',
           description: 'AI가 미션 완료 여부를 자동으로 검증하고 있습니다.',
           color: 'purple'
@@ -67,22 +68,16 @@ const MissionSubmissionLoading: React.FC<MissionSubmissionLoadingProps> = ({
 
   if (compact) {
     return (
-      <div className="flex flex-col items-center justify-center py-8">
-        <div className="mb-4">
+      <div className="flex flex-col items-center justify-center py-8 px-6 rounded-2xl" style={{ backgroundColor: '#D7ECFE' }}>
+        <div className="mb-6">
           {stageInfo.icon}
         </div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        <h3 className="text-xl font-semibold text-gray-800 mb-3 text-center">
           {stageInfo.title}
         </h3>
-        <p className="text-gray-600 text-sm text-center mb-4">
+        <p className="text-gray-600 text-sm text-center leading-relaxed">
           {message || stageInfo.description}
         </p>
-        <div className="w-48 bg-gray-200 rounded-full h-2">
-          <div 
-            className={`h-2 rounded-full transition-all duration-500 ${getProgressBarColor(stageInfo.color)}`}
-            style={{ width: `${Math.max(progress, 20)}%` }}
-          />
-        </div>
       </div>
     );
   }

@@ -158,7 +158,7 @@ const MissionCompletePage = () => {
   }
   
   return (
-    <div className="w-full max-w-md mx-auto bg-white min-h-screen flex flex-col">
+    <div className="w-full max-w-md mx-auto min-h-screen flex flex-col" style={{ backgroundColor: isLoading ? '#D7ECFE' : 'white' }}>
       <div className="flex-1 flex items-center justify-center">
         {isLoading ? (
           <MissionSubmissionLoading 

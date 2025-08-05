@@ -40,8 +40,6 @@ const RewardShopPage = () => {
     { id: "DISCOUNT_COUPON", label: "Coupons" },
     { id: "GIFT_CARD", label: "Gift Cards" },
     { id: "ECO_PRODUCT", label: "Eco Products" },
-    { id: "EXPERIENCE", label: "Experience" },
-    { id: "DONATION", label: "Donation" },
   ];
 
   const handleBackClick = () => {
