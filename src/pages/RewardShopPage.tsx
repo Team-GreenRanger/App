@@ -5,6 +5,19 @@ import { HiChevronLeft, HiOutlineSparkles } from "react-icons/hi";
 import { getCarbonCreditBalance } from "../utils/carbon-credit.utils";
 import { Reward } from "../types";
 import { getRewards, redeemReward } from "../utils";
+import ToastModal, { ToastModalProps } from "../components/ToastModal";
+
+interface ModalState {
+  isVisible: boolean;
+  type: "info" | "warning" | "error" | "confirm";
+  title: string;
+  message?: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  showCancel?: boolean;
+}
 
 const RewardShopPage = () => {
   const navigate = useNavigate();
@@ -16,6 +29,15 @@ const RewardShopPage = () => {
   const [purchasingRewards, setPurchasingRewards] = useState<Set<string>>(
     new Set()
   );
+
+  // 모달 상태 관리
+  const [modalState, setModalState] = useState<ModalState>({
+    isVisible: false,
+    type: "info",
+    title: "",
+    message: "",
+    showCancel: false,
+  });
 
   useEffect(() => {
     const loadData = async () => {
@@ -29,14 +51,20 @@ const RewardShopPage = () => {
         setRewards(rewardData.rewards);
       } catch (error) {
         console.error("데이터 로드 실패:", error);
-        showToast({ message: "데이터를 불러오는데 실패했습니다." });
+        setModalState({
+          isVisible: true,
+          type: "error",
+          title: "Error",
+          message: "Failed to load data. Please try again.",
+          showCancel: false,
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     loadData();
-  }, [showToast]);
+  }, []);
 
   const tabs = [
     { id: "all", label: "All" },
@@ -50,29 +78,70 @@ const RewardShopPage = () => {
     navigate(-1);
   };
 
-  const handlePurchase = async (reward: Reward) => {
+  const closeModal = () => {
+    setModalState((prev) => ({ ...prev, isVisible: false }));
+  };
+
+  const showModal = (config: Partial<ModalState>) => {
+    setModalState({
+      isVisible: true,
+      type: "info",
+      title: "",
+      showCancel: false,
+      ...config,
+    });
+  };
+
+  const handlePurchaseClick = (reward: Reward) => {
     vibrate({ duration: 100 });
 
+    // 구매 가능성 검증
     if (reward.status !== "AVAILABLE") {
-      showToast({ message: "This reward is currently unavailable" });
+      showModal({
+        type: "warning",
+        title: "Unavailable",
+        message: "This reward is currently unavailable.",
+      });
       return;
     }
 
     if (balance < reward.cost) {
-      showToast({ message: "Not enough points to purchase this reward" });
+      showModal({
+        type: "warning",
+        title: "Insufficient Points",
+        message: `You need ${
+          reward.cost - balance
+        } more points to purchase this reward.`,
+      });
       return;
     }
 
     if (reward.availableQuantity <= 0) {
-      showToast({ message: "This reward is out of stock" });
+      showModal({
+        type: "warning",
+        title: "Out of Stock",
+        message: "This reward is currently out of stock.",
+      });
       return;
     }
 
-    // 이미 구매 중인 리워드인지 확인
     if (purchasingRewards.has(reward.id)) {
       return;
     }
 
+    // 구매 확인 모달 표시
+    showModal({
+      type: "confirm",
+      title: "Confirm Purchase",
+      message: `Are you sure you want to purchase "${reward.name}" for ${reward.cost} points?`,
+      confirmText: "Purchase",
+      cancelText: "Cancel",
+      showCancel: true,
+      onConfirm: () => handlePurchase(reward),
+    });
+  };
+
+  const handlePurchase = async (reward: Reward) => {
     try {
       // 구매 중 상태로 설정
       setPurchasingRewards((prev) => new Set([...prev, reward.id]));
@@ -80,16 +149,20 @@ const RewardShopPage = () => {
       // 물리적 상품의 경우 배송 주소가 필요할 수 있음
       let deliveryAddress: string | undefined;
       if (reward.type === "PHYSICAL_ITEM" || reward.type === "ECO_PRODUCT") {
-        // 실제 앱에서는 사용자 설정에서 가져오거나 입력받아야 함
-        // 여기서는 예시로 undefined로 설정 (서버에서 기본 주소 사용)
         deliveryAddress = undefined;
       }
 
       const result = await redeemReward(reward.id, deliveryAddress);
 
-      // 성공적으로 구매한 경우
-      showToast({
-        message: `Successfully purchased ${reward.name}! Check My Rewards to use it.`,
+      // 성공 모달 표시
+      showModal({
+        type: "info",
+        title: "Purchase Successful!",
+        message: `You have successfully purchased "${reward.name}". Check My Rewards to use it.`,
+        confirmText: "Great!",
+        onConfirm: () => {
+          navigate("/my/credit/my-rewards");
+        },
       });
 
       // 잔액 업데이트
@@ -103,16 +176,24 @@ const RewardShopPage = () => {
             : r
         )
       );
+
+      // 진동 피드백
+      vibrate({ duration: 200 });
     } catch (error) {
       console.error("리워드 구매 실패:", error);
 
-      // 에러 메시지 표시
+      // 에러 모달 표시
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Failed to purchase reward. Please try again.";
 
-      showToast({ message: errorMessage });
+      showModal({
+        type: "error",
+        title: "Purchase Failed",
+        message: errorMessage,
+        confirmText: "OK",
+      });
     } finally {
       // 구매 중 상태 해제
       setPurchasingRewards((prev) => {
@@ -233,7 +314,7 @@ const RewardShopPage = () => {
                   </span>
 
                   <button
-                    onClick={() => handlePurchase(reward)}
+                    onClick={() => handlePurchaseClick(reward)}
                     disabled={isDisabled}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                       !isDisabled
@@ -269,6 +350,20 @@ const RewardShopPage = () => {
           </div>
         )}
       </div>
+
+      {/* ToastModal 컴포넌트 */}
+      <ToastModal
+        isVisible={modalState.isVisible}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+        onConfirm={modalState.onConfirm}
+        onCancel={modalState.onCancel}
+        onClose={closeModal}
+        showCancel={modalState.showCancel}
+      />
     </div>
   );
 };
