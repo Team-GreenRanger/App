@@ -203,7 +203,11 @@ const MyPage: React.FC = () => {
     }
 
     if (passwordForm.newPassword.length < 6) {
-      showModal("warning", "Input Error", "New password must be at least 6 characters.");
+      showModal(
+        "warning",
+        "Input Error",
+        "New password must be at least 6 characters."
+      );
       return;
     }
 
@@ -247,7 +251,11 @@ const MyPage: React.FC = () => {
       await privateApi.delete("/users/deactivate", { data: deactivateData });
 
       clearAuthData();
-      showModal("info", "Account Deactivated", "Your account has been deactivated.");
+      showModal(
+        "info",
+        "Account Deactivated",
+        "Your account has been deactivated."
+      );
 
       setTimeout(() => {
         navigate("/welcome");
@@ -399,12 +407,6 @@ const MyPage: React.FC = () => {
                   label="Missions Completed"
                   color="purple"
                 />
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-gray-600 text-sm">Global Ranking</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    #{statistics.globalRanking}
-                  </p>
-                </div>
               </div>
 
               <div className="mt-6">
@@ -470,9 +472,7 @@ const MyPage: React.FC = () => {
                     onChange={handleBrightnessChange}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
-                  <p className="text-xs text-gray-600">
-                    Current: {brightness}
-                  </p>
+                  <p className="text-xs text-gray-600">Current: {brightness}</p>
                 </div>
               </div>
             )}
@@ -560,7 +560,10 @@ const MyPage: React.FC = () => {
           <div className="flex items-center justify-center gap-1 text-gray-500 text-sm">
             <span>Made with</span>
             <Heart className="w-4 h-4 text-red-500 fill-current" />
-            <span>by <span className="font-semibold text-green-600">GreenRangers</span></span>
+            <span>
+              by{" "}
+              <span className="font-semibold text-green-600">GreenRangers</span>
+            </span>
           </div>
         </div>
       </div>
@@ -632,7 +635,8 @@ const MyPage: React.FC = () => {
               Deactivate Account
             </h3>
             <p className="text-gray-600 text-sm mb-4">
-              Are you sure you want to deactivate your account? This action cannot be undone.
+              Are you sure you want to deactivate your account? This action
+              cannot be undone.
             </p>
             <div className="space-y-4">
               <input
