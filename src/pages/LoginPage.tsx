@@ -33,9 +33,9 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [modal, setModal] = useState({
     isVisible: false,
-    type: 'info' as 'info' | 'warning' | 'error' | 'confirm',
-    title: '',
-    message: '',
+    type: "info" as "info" | "warning" | "error" | "confirm",
+    title: "",
+    message: "",
   });
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -44,22 +44,30 @@ const LoginPage = () => {
 
   const validateForm = () => {
     if (!formData.email.trim()) {
-      showModal('warning', '입력 오류', '이메일을 입력해주세요.');
+      showModal("warning", "Input Error", "Please enter your email.");
       return false;
     }
     if (!formData.password.trim()) {
-      showModal('warning', '입력 오류', '비밀번호를 입력해주세요.');
+      showModal("warning", "Input Error", "Please enter your password.");
       return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      showModal('warning', '입력 오류', '올바른 이메일 형식을 입력해주세요.');
+      showModal(
+        "warning",
+        "Input Error",
+        "Please enter a valid email address."
+      );
       return false;
     }
     return true;
   };
 
-  const showModal = (type: 'info' | 'warning' | 'error' | 'confirm', title: string, message: string) => {
+  const showModal = (
+    type: "info" | "warning" | "error" | "confirm",
+    title: string,
+    message: string
+  ) => {
     setModal({ isVisible: true, type, title, message });
   };
 
@@ -72,27 +80,30 @@ const LoginPage = () => {
 
     setIsLoading(true);
     try {
-      const response = await publicApi.post<LoginResponse>('/auth/login', {
+      const response = await publicApi.post<LoginResponse>("/auth/login", {
         email: formData.email,
         password: formData.password,
       });
 
       const { accessToken, user } = response.data;
-      
+
       saveAuthData(accessToken, user);
-      
-      showModal('info', '로그인 성공', '환영합니다!');
-      
+
+      showModal("info", "Login Successful", "Welcome!");
+
       setTimeout(() => {
-        navigate('/');
+        navigate("/");
       }, 1000);
-      
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       if (error.response?.status === 400) {
-        showModal('error', '로그인 실패', '이메일 또는 비밀번호가 올바르지 않습니다.');
+        showModal("error", "Login Failed", "Invalid email or password.");
       } else {
-        showModal('error', '로그인 실패', '네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+        showModal(
+          "error",
+          "Login Failed",
+          "A network error occurred. Please try again."
+        );
       }
     } finally {
       setIsLoading(false);
@@ -156,7 +167,7 @@ const LoginPage = () => {
             disabled={isLoading}
             className="w-full bg-green-500 text-white py-4 rounded-full text-lg font-medium hover:bg-green-600 transition-colors mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Loading...' : 'Login'}
+            {isLoading ? "Loading..." : "Login"}
           </button>
 
           <p className="text-center text-gray-600 mt-4">
