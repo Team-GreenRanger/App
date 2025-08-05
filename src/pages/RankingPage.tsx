@@ -6,7 +6,6 @@ import {
   UserRankingStats,
   RankingUser,
   RankingScope,
-  RankingPeriod,
 } from "../types";
 
 const RankingPage = () => {
@@ -52,7 +51,7 @@ const RankingPage = () => {
     if (!leaderboardData) return [];
 
     const scope = activeScopeTab.toLowerCase() as 'local' | 'global';
-    const period = 'monthly'; // 고정: 월별 랭킹만 사용
+    const period = 'monthly';
     
     const key = `${scope}${period.charAt(0).toUpperCase() + period.slice(1)}` as keyof typeof leaderboardData;
     
@@ -106,25 +105,13 @@ const RankingPage = () => {
     return "—";
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading rankings...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white px-4 py-6">
+      <div className="bg-gray-50 px-6 py-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Monthly Ranking</h1>
         <p className="text-sm text-gray-500 mb-4">Rankings reset on the 1st of each month</p>
 
         <div className="mb-4">
-          <div className="text-sm font-medium text-gray-700 mb-2">Scope</div>
           <Tabs 
             tabs={scopeTabs} 
             activeTab={activeScopeTab} 
@@ -132,13 +119,19 @@ const RankingPage = () => {
           />
         </div>
 
-        <RankingHeaderCard
-          rank={getCurrentUserRank()}
-          points={getCurrentUserScore()}
-        />
+        {isLoading ? (
+          <div className="skeleton rounded-2xl h-32 mb-4"></div>
+        ) : (
+          <RankingHeaderCard
+            rank={getCurrentUserRank()}
+            points={getCurrentUserScore()}
+          />
+        )}
 
-        {getCurrentUserStats() && (
-          <div className="bg-gray-50 rounded-lg p-4 mb-4">
+        {isLoading ? (
+          <div className="skeleton rounded-xl h-20 mt-4"></div>
+        ) : getCurrentUserStats() && (
+          <div className="bg-gray-50 rounded-xl p-4 mt-4">
             <div className="flex justify-between items-center text-sm">
               <div className="text-gray-600">
                 Rank Change:{" "}
@@ -168,45 +161,71 @@ const RankingPage = () => {
         )}
       </div>
 
-      <div className="px-4 pb-20">
-        <div className="space-y-1">
-          {getCurrentRankings().map((user) => (
-            <div
-              key={user.userId}
-              onClick={() => handleRankingItemClick(user)}
-              className="cursor-pointer"
-            >
-              <RankingItem
-                rank={user.rank}
-                name={user.userName}
-                points={user.score}
-                isCurrentUser={user.isCurrentUser}
-                avatar={user.profileImageUrl}
-              />
+      <div className="px-6 pb-20">
+        {isLoading ? (
+          <div className="space-y-3">
+            {[...Array(8)].map((_, index) => (
+              <div key={index} className="bg-white rounded-xl p-4">
+                <div className="flex items-center">
+                  <div className="skeleton w-8 h-8 rounded-full flex-shrink-0"></div>
+                  <div className="flex-1 ml-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="skeleton h-5 rounded w-24 mb-1"></div>
+                        <div className="skeleton h-4 rounded w-16"></div>
+                      </div>
+                      <div className="text-right">
+                        <div className="skeleton h-5 rounded w-20 mb-1"></div>
+                        <div className="skeleton h-3 rounded w-12"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="space-y-1">
+              {getCurrentRankings().map((user) => (
+                <div
+                  key={user.userId}
+                  onClick={() => handleRankingItemClick(user)}
+                  className="cursor-pointer"
+                >
+                  <RankingItem
+                    rank={user.rank}
+                    name={user.userName}
+                    points={user.score}
+                    isCurrentUser={user.isCurrentUser}
+                    avatar={user.profileImageUrl}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {getCurrentRankings().length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No ranking data available for this month.</p>
-            <p className="text-gray-400 text-sm mt-2">
-              {activeScopeTab === 'LOCAL' 
-                ? 'No users from your country have earned points this month.' 
-                : 'No global ranking data available for this month.'}
-            </p>
-          </div>
-        )}
+            {getCurrentRankings().length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No ranking data available for this month.</p>
+                <p className="text-gray-400 text-sm mt-2">
+                  {activeScopeTab === 'LOCAL' 
+                    ? 'No users from your country have earned points this month.' 
+                    : 'No global ranking data available for this month.'}
+                </p>
+              </div>
+            )}
 
-        {leaderboardData && getCurrentRankings().length > 0 && (
-          <div className="mt-6 text-center">
-            <button
-              onClick={handleLoadMore}
-              className="text-green-600 font-medium hover:text-green-700 transition-colors"
-            >
-              Load More
-            </button>
-          </div>
+            {leaderboardData && getCurrentRankings().length > 0 && (
+              <div className="mt-6 text-center">
+                <button
+                  onClick={handleLoadMore}
+                  className="text-green-600 font-medium hover:text-green-700 transition-colors px-6 py-3 rounded-xl hover:bg-green-50"
+                >
+                  Load More
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

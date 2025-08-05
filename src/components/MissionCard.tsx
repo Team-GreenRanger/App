@@ -35,9 +35,6 @@ const MissionCard: React.FC<MissionCardProps> = ({
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-gray-900 text-base">{mission.title}</h3>
-                {isFullyCompleted && (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                )}
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -68,7 +65,7 @@ const MissionCard: React.FC<MissionCardProps> = ({
                 <span className="text-lg font-bold text-gray-900">
                   {completedSubmissions} / {totalSubmissions}
                 </span>
-                <span className="text-sm text-gray-500">완료</span>
+                <span className="text-sm text-gray-500">Finished</span>
               </div>
               <span className={`text-sm font-medium ${
                 isFullyCompleted ? 'text-green-600' : 'text-gray-500'
@@ -86,29 +83,13 @@ const MissionCard: React.FC<MissionCardProps> = ({
                 style={{ width: `${Math.min(actualProgressPercentage, 100)}%` }}
               />
             </div>
-            
-            {/* 상태별 메시지 */}
-            {isFullyCompleted ? (
-              <div className="text-sm text-green-600 font-medium flex items-center gap-1">
-                <CheckCircle className="w-4 h-4" />
-                미션 완료! {mission.creditReward} 크레딧 획득
-              </div>
-            ) : actualRemainingSubmissions > 0 ? (
-              <div className="text-sm text-gray-600">
-                {actualRemainingSubmissions}회 더 제출하면 완료!
-              </div>
-            ) : (
-              <div className="text-sm text-orange-600">
-                검증 대기 중...
-              </div>
-            )}
           </div>
         </div>
 
         {/* 카메라 버튼 / 완료 표시 */}
         {isFullyCompleted ? (
           <div className="rounded-lg p-3 flex items-center justify-center min-w-[56px] h-14 bg-green-100 border-2 border-green-300">
-            <span className="text-green-700 font-semibold text-sm">완료</span>
+            <span className="text-green-700 font-semibold text-sm">DONE</span>
           </div>
         ) : (
           <button

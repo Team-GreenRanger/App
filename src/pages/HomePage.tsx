@@ -11,6 +11,7 @@ import { useAndroidApi } from "../hooks";
 import { privateApi } from "../api";
 import { UserProfile, UserStatistics, EcoTip } from "../types";
 import { HiSparkles, HiGlobeAlt } from "react-icons/hi";
+import { userCache } from "../utils";
 
 const HomePage = () => {
   const { updateBottomNavigation, showToast } = useAndroidApi();
@@ -18,7 +19,9 @@ const HomePage = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [statistics, setStatistics] = useState<UserStatistics | null>(null);
   const [ecoTip, setEcoTip] = useState<EcoTip | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [isLoadingTip, setIsLoadingTip] = useState(true);
 
   useEffect(() => {
     updateBottomNavigation("home");
@@ -26,8 +29,22 @@ const HomePage = () => {
   }, [updateBottomNavigation]);
 
   const loadUserData = async () => {
+    // 캐시된 사용자 데이터가 있으면 먼저 표시
+    const cachedUser = userCache.get();
+    if (cachedUser) {
+      setProfile(prev => ({
+        ...prev,
+        name: cachedUser.name,
+        email: cachedUser.email || '',
+        profileImageUrl: cachedUser.profileImageUrl,
+        isVerified: false,
+        status: 'ACTIVE',
+        createdAt: ''
+      } as UserProfile));
+      setIsLoadingProfile(false);
+    }
+
     try {
-      setIsLoading(true);
       const [profileResponse, statsResponse, ecoTipResponse] =
         await Promise.all([
           privateApi.get<UserProfile>("/users/profile"),
@@ -38,10 +55,20 @@ const HomePage = () => {
       setProfile(profileResponse.data);
       setStatistics(statsResponse.data);
       setEcoTip(ecoTipResponse.data);
+
+      // 사용자 정보 캐싱
+      userCache.set({
+        name: profileResponse.data.name,
+        email: profileResponse.data.email,
+        profileImageUrl: profileResponse.data.profileImageUrl
+      });
+
     } catch (error) {
-      console.error("홈페이지 데이터 로드 실패:", error);
+      console.error("Failed to load homepage data:", error);
     } finally {
-      setIsLoading(false);
+      setIsLoadingProfile(false);
+      setIsLoadingStats(false);
+      setIsLoadingTip(false);
     }
   };
 
@@ -50,7 +77,7 @@ const HomePage = () => {
   };
 
   const handleStartLearning = () => {
-    showToast({ message: "학습 프로그램을 시작합니다!" });
+    showToast({ message: "Starting learning program!" });
     navigate("/education");
   };
 
@@ -63,17 +90,6 @@ const HomePage = () => {
     return Math.floor(getTreesPlanted() * 0.3);
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 relative">
       <UserProfileHeader
@@ -83,44 +99,64 @@ const HomePage = () => {
 
       <div className="px-4 pb-20">
         <div className="mb-6">
-          <CarbonCreditCard
-            points={statistics?.currentCarbonCredits || 0}
-            onClick={handleCarbonCreditClick}
-          />
+          {isLoadingStats ? (
+            <div className="skeleton rounded-2xl h-24"></div>
+          ) : (
+            <CarbonCreditCard
+              points={statistics?.currentCarbonCredits || 0}
+              onClick={handleCarbonCreditClick}
+            />
+          )}
         </div>
 
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-800 mb-2">
             Welcome {profile?.name || "Guest"}!
           </h2>
-          <p className="text-gray-600 mb-4">
-            You planted {getWeeklyTreesPlanted()} trees this week
-          </p>
+          {isLoadingStats ? (
+            <div className="skeleton rounded w-48 h-4 mb-4"></div>
+          ) : (
+            <p className="text-gray-600 mb-4">
+              You planted {getWeeklyTreesPlanted()} trees this week
+            </p>
+          )}
 
-          {/* 캡슐 형태의 통계 표시 */}
           <div className="flex flex-wrap gap-3">
-            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-              <span className="text-blue-700 font-semibold text-sm">
-                {statistics?.totalCo2Reduction || 0}kg CO₂ saved
-              </span>
-            </div>
+            {isLoadingStats ? (
+              <>
+                <div className="skeleton rounded-full h-8 w-32"></div>
+                <div className="skeleton rounded-full h-8 w-24"></div>
+              </>
+            ) : (
+              <>
+                <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                  <span className="text-blue-700 font-semibold text-sm">
+                    {statistics?.totalCo2Reduction || 0}kg CO₂ saved
+                  </span>
+                </div>
 
-            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-50 to-purple-100 rounded-full border border-purple-200">
-              <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-              <span className="text-purple-700 font-semibold text-sm">
-                #{statistics?.globalRanking || 999} rank
-              </span>
-            </div>
+                <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-50 to-purple-100 rounded-full border border-purple-200">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                  <span className="text-purple-700 font-semibold text-sm">
+                    #{statistics?.globalRanking || 999} rank
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         <div className="space-y-4">
-          <EcoTipCard
-            title="Today's Eco Tips"
-            description={ecoTip?.tip || "Loading eco tip..."}
-            icon={<HiSparkles className="w-6 h-6 text-blue-600" />}
-          />
+          {isLoadingTip ? (
+            <div className="skeleton rounded-2xl h-32"></div>
+          ) : (
+            <EcoTipCard
+              title="Today's Eco Tips"
+              description={ecoTip?.tip || "Loading eco tip..."}
+              icon={<HiSparkles className="w-6 h-6 text-blue-600" />}
+            />
+          )}
 
           <LearnMoreCard
             title="Let's learn more!"

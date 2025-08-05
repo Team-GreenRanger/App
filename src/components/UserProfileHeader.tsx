@@ -20,7 +20,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
     setImageError(true);
   };
   return (
-    <div className="flex items-center justify-between p-4 bg-white border-b border-gray-100">
+    <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-100">
       <div className="flex items-center space-x-3">
         <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
           {profileImageUrl && !imageError ? (

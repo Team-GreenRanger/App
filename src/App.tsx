@@ -148,12 +148,21 @@ const App: React.FC = () => {
   const isDevelopment = import.meta.env.MODE === "development";
 
   useEffect(() => {
-    log("React 앱이 시작되었습니다.");
+    // 모바일 확대/축소 방지 메타 태그 설정
+    let viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (!viewportMeta) {
+      viewportMeta = document.createElement('meta');
+      viewportMeta.setAttribute('name', 'viewport');
+      document.head.appendChild(viewportMeta);
+    }
+    viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no');
+
+    log("React app started.");
 
     if (isAvailable) {
-      log("안드로이드 브리지가 사용 가능합니다.");
+      log("Android bridge is available.");
     } else {
-      console.log("웹 브라우저 환경에서 실행 중입니다.");
+      console.log("Running in web browser environment.");
     }
   }, [log, isAvailable]);
 

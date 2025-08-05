@@ -1,3 +1,5 @@
+import { userCache } from './userCache.utils';
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken?: string;
@@ -70,6 +72,7 @@ export const removeUserInfo = (): void => {
 export const logout = (): void => {
   removeAuthToken();
   removeUserInfo();
+  userCache.clear();
 };
 
 export const isLoggedIn = (): boolean => {

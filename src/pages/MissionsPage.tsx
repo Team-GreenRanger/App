@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useAndroidApi } from "../hooks";
-import { Tabs, MissionCard } from "../components";
+import { MissionCard } from "../components";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { missionApi } from "../api/missionApi";
 import { UserMission } from "../types";
 
@@ -10,62 +10,83 @@ const MissionsPage: React.FC = () => {
   const { updateBottomNavigation, showToast, vibrate } = useAndroidApi();
   const [missions, setMissions] = useState<UserMission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("active");
   const navigate = useNavigate();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [startY, setStartY] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
 
-  // API 데이터 로드 함수 - Daily Missions 사용으로 변경
-  const loadMissions = async () => {
+  const loadMissions = async (showRefreshingState = false) => {
     try {
-      setIsLoading(true);
+      if (showRefreshingState) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
       setError(null);
       
-      console.log('🚀 Daily Missions API 호출 시작...'); // 디버깅
+      console.log('🚀 Daily Missions API call started...');
       
-      // Daily Missions API 사용 - 자동으로 미션 할당
       const missions = await missionApi.getDailyMissions();
       
-      console.log('🎉 Daily Missions API 성공:', missions); // 디버깅
-      console.log('📊 받은 미션 수:', missions.length);
-      
-      // 미션 데이터 검증
-      missions.forEach((mission, index) => {
-        console.log(`미션 ${index + 1}:`, {
-          id: mission.id,
-          title: mission.mission?.title || '제목 없음',
-          status: mission.status,
-          isActive: mission.isActive,
-          isDone: mission.isDone,
-          currentProgress: mission.currentProgress,
-          requiredSubmissions: mission.mission?.requiredSubmissions || 'N/A'
-        });
-      });
+      console.log('🎉 Daily Missions API success:', missions);
+      console.log('📊 Received missions count:', missions.length);
       
       setMissions(missions);
+      
+      if (showRefreshingState) {
+        showToast({ message: "Missions refreshed!" });
+      }
     } catch (err: any) {
-      console.error('❌ Daily Missions API 실패:', err);
-      console.error('❌ 에러 메시지:', err.message);
-      console.error('❌ 에러 응답:', err.response?.data);
-      console.error('❌ 에러 상태 코드:', err.response?.status);
+      console.error('❌ Daily Missions API failed:', err);
       
       if (err.response?.status === 401) {
-        setError('로그인이 필요합니다. 다시 로그인해주세요.');
+        setError('Login required. Please login again.');
       } else if (err.response?.status === 404) {
-        setError('미션 서비스를 찾을 수 없습니다.');
+        setError('Mission service not found.');
       } else if (err.message?.includes('No active missions')) {
-        setError('현재 사용 가능한 미션이 없습니다. 관리자에게 문의해주세요.');
+        setError('No missions available. Please contact administrator.');
       } else {
-        setError(`미션 데이터를 불러오는데 실패했습니다: ${err.message}`);
+        setError(`Failed to load mission data: ${err.message}`);
       }
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
-  const tabs = [
-    { id: "active", label: "Active" },
-    { id: "done", label: "Done" },
-  ];
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (scrollRef.current && scrollRef.current.scrollTop === 0) {
+      setStartY(e.touches[0].clientY);
+      setIsPulling(true);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isPulling || !scrollRef.current) return;
+    
+    const currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+    
+    if (diff > 0 && scrollRef.current.scrollTop === 0) {
+      e.preventDefault();
+      const distance = Math.min(diff * 0.5, 100);
+      setPullDistance(distance);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullDistance > 60 && !isRefreshing) {
+      loadMissions(true);
+      vibrate({ duration: 50 });
+    }
+    
+    setIsPulling(false);
+    setPullDistance(0);
+    setStartY(0);
+  };
 
   useEffect(() => {
     updateBottomNavigation("missions");
@@ -74,9 +95,8 @@ const MissionsPage: React.FC = () => {
 
   const handleCameraClick = (userMission: UserMission) => {
     vibrate({ duration: 100 });
-    showToast({ message: "카메라가 열렸습니다!" });
+    showToast({ message: "Camera opened!" });
     
-    // URL 파라미터로 missionId 전달
     navigate(`/camera/${userMission.mission.id}`, {
       state: {
         missionId: userMission.mission.id,
@@ -86,62 +106,96 @@ const MissionsPage: React.FC = () => {
     });
   };
 
-  // isActive와 isDone 사용해서 미션 구분
-  const activeMissions = missions.filter(m => m.isActive && !m.isDone);
-  const doneMissions = missions.filter(m => m.isDone);
-  
-  const currentMissions = activeTab === "active" ? activeMissions : doneMissions;
+  // 완료된 미션을 위로, 미완료 미션을 아래로 정렬
+  const sortedMissions = missions.sort((a, b) => {
+    if (a.isDone && !b.isDone) return -1; // 완료된 것이 위로
+    if (!a.isDone && b.isDone) return 1;  // 미완료된 것이 아래로
+    return 0; // 같은 상태면 순서 유지
+  });
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-white px-4 py-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-gray-50 px-6 py-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Missions</h1>
-        
-        {/* 간단한 카운트 정보만 표시 */}
-        <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
-          <span>Active: {activeMissions.length}</span>
-          <span>•</span>
-          <span>Completed: {doneMissions.length}</span>
-        </div>
-        
-        {/* Daily Missions 새로고침만 제공 */}
-        <div className="flex gap-2 mb-4">
-          <button 
-            onClick={() => loadMissions()}
-            className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
-          >
-            Daily Missions 새로고침
-          </button>
-        </div>
-
-        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
-      <div className="px-4 pb-20 pt-4">
+      <div 
+        ref={scrollRef}
+        className="px-6 pb-20 pt-4 pull-to-refresh overflow-y-auto"
+        style={{ 
+          transform: `translateY(${pullDistance}px)`,
+          transition: isPulling ? 'none' : 'transform 0.3s ease-out'
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {(pullDistance > 0 || isRefreshing) && (
+          <div className="flex items-center justify-center py-4">
+            <RefreshCw 
+              className={`w-5 h-5 text-green-500 ${isRefreshing ? 'animate-spin' : ''}`}
+              style={{
+                transform: `rotate(${pullDistance * 3}deg)`
+              }}
+            />
+            <span className="ml-2 text-sm text-gray-600">
+              {isRefreshing ? 'Refreshing...' : pullDistance > 60 ? 'Release to refresh' : 'Pull to refresh'}
+            </span>
+          </div>
+        )}
+
         {error && (
           <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 mb-4">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm">{error}</p>
               <button 
-                onClick={loadMissions}
+                onClick={() => loadMissions(true)}
                 className="text-xs text-red-600 underline mt-1"
               >
-                다시 시도
+                Try again
               </button>
             </div>
           </div>
         )}
 
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-500">Loading missions...</p>
+          <div className="space-y-4">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="bg-white rounded-2xl p-6 border border-gray-100">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <div className="skeleton h-6 rounded w-48 mb-2"></div>
+                    <div className="skeleton h-4 rounded w-full mb-2"></div>
+                    <div className="skeleton h-4 rounded w-3/4"></div>
+                  </div>
+                  <div className="skeleton w-12 h-12 rounded-xl ml-4"></div>
+                </div>
+
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="skeleton h-4 rounded w-16 mb-1"></div>
+                    <div className="skeleton h-4 rounded w-12"></div>
+                  </div>
+                  <div className="text-right">
+                    <div className="skeleton h-4 rounded w-20 mb-1"></div>
+                    <div className="skeleton w-6 h-6 rounded"></div>
+                  </div>
+                </div>
+
+                <div className="skeleton w-full h-2 rounded-full mb-4"></div>
+
+                <div className="flex gap-3">
+                  <div className="skeleton flex-1 h-12 rounded-xl"></div>
+                  <div className="skeleton w-12 h-12 rounded-xl"></div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <>
             <div className="space-y-0">
-              {currentMissions.map((userMission, index) => (
+              {sortedMissions.map((userMission, index) => (
                 <MissionCard
                   key={userMission.id || index}
                   userMission={userMission}
@@ -150,13 +204,9 @@ const MissionsPage: React.FC = () => {
               ))}
             </div>
 
-            {currentMissions.length === 0 && (
+            {sortedMissions.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-500">
-                  {activeTab === "active"
-                    ? "No active missions"
-                    : "No completed missions"}
-                </p>
+                <p className="text-gray-500">No missions available</p>
               </div>
             )}
           </>

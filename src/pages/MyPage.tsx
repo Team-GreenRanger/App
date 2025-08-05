@@ -12,9 +12,11 @@ import {
   Share2,
   Copy,
   Sun,
+  Heart,
 } from "lucide-react";
 import { privateApi } from "../api";
 import { ToastModal, StatCard, CarbonCreditCard } from "../components";
+import { userCache } from "../utils";
 import {
   UserProfile,
   UserStatistics,
@@ -176,6 +178,10 @@ const MyPage: React.FC = () => {
       );
       setProfile(response.data);
       setEditMode(false);
+
+      // 캐시 업데이트
+      userCache.update({ name: response.data.name });
+
       showModal("info", "Success", "Profile has been updated.");
     } catch (error: any) {
       console.error("Profile update failed:", error);
@@ -269,58 +275,50 @@ const MyPage: React.FC = () => {
     return Math.min((currentProgress / nextLevelRequirement) * 100, 100);
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="bg-white">
         <div className="px-6 pt-12 pb-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1 min-w-0">
-              {" "}
-              {/* min-w-0 추가로 flex 컨테이너 축소 허용 */}
               <div className="flex items-center mb-3">
                 <div className="relative flex-shrink-0">
-                  {" "}
-                  {/* flex-shrink-0로 프로필 이미지 크기 고정 */}
-                  <img
-                    src={
-                      profile?.profileImageUrl ||
-                      "https://via.placeholder.com/60"
-                    }
-                    alt="Profile"
-                    className="w-16 h-16 rounded-full border-2 border-gray-100"
-                  />
-                  {profile?.isVerified && (
-                    <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
-                      <Shield className="w-3 h-3 text-white" />
-                    </div>
+                  {isLoading ? (
+                    <div className="skeleton w-16 h-16 rounded-full"></div>
+                  ) : (
+                    <>
+                      <img
+                        src={
+                          profile?.profileImageUrl ||
+                          "https://via.placeholder.com/60"
+                        }
+                        alt="Profile"
+                        className="w-16 h-16 rounded-full border-2 border-gray-100"
+                      />
+                      {profile?.isVerified && (
+                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
+                          <Shield className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
                 <div className="ml-4 flex-1 min-w-0 overflow-hidden">
-                  {" "}
-                  {/* min-w-0과 overflow-hidden 추가 */}
-                  {editMode ? (
+                  {isLoading ? (
+                    <div className="min-w-0">
+                      <div className="skeleton h-6 rounded w-32 mb-2"></div>
+                      <div className="skeleton h-4 rounded w-48"></div>
+                    </div>
+                  ) : editMode ? (
                     <div className="space-y-2">
-                      {" "}
-                      {/* flex 대신 세로 배치로 변경 */}
                       <div className="flex items-center gap-2 min-w-0">
                         <input
                           type="text"
                           value={editedName}
                           onChange={(e) => setEditedName(e.target.value)}
-                          className="text-xl font-bold text-gray-900 bg-transparent border-b border-gray-300 focus:border-green-500 focus:outline-none flex-1 min-w-0 max-w-[200px] truncate" // max-w 추가하고 truncate로 텍스트 자르기
+                          className="text-xl font-bold text-gray-900 bg-transparent border-b border-gray-300 focus:border-green-500 focus:outline-none flex-1 min-w-0 max-w-[200px] truncate"
                           disabled={isUpdating}
-                          maxLength={20} // 최대 글자 수 제한
+                          maxLength={20}
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -328,7 +326,7 @@ const MyPage: React.FC = () => {
                           onClick={handleProfileUpdate}
                           disabled={isUpdating}
                           className="text-green-500 font-medium disabled:opacity-50 text-sm px-3 py-1 bg-green-50 rounded-md"
-                          >
+                        >
                           {isUpdating ? "Saving..." : "Save"}
                         </button>
                         <button
@@ -365,7 +363,22 @@ const MyPage: React.FC = () => {
             </div>
           </div>
 
-          {statistics && (
+          {isLoading ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="skeleton h-16 rounded-xl"></div>
+                <div className="skeleton h-16 rounded-xl"></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="skeleton h-16 rounded-xl"></div>
+                <div className="skeleton h-16 rounded-xl"></div>
+              </div>
+              <div className="mt-6">
+                <div className="skeleton h-5 rounded w-24 mb-3"></div>
+                <div className="skeleton h-24 rounded-2xl"></div>
+              </div>
+            </div>
+          ) : statistics ? (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <StatCard
@@ -404,7 +417,7 @@ const MyPage: React.FC = () => {
                 />
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -542,6 +555,14 @@ const MyPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        <div className="text-center py-6 border-t border-gray-100">
+          <div className="flex items-center justify-center gap-1 text-gray-500 text-sm">
+            <span>Made with</span>
+            <Heart className="w-4 h-4 text-red-500 fill-current" />
+            <span>by <span className="font-semibold text-green-600">GreenRangers</span></span>
+          </div>
+        </div>
       </div>
 
       {showPasswordModal && (

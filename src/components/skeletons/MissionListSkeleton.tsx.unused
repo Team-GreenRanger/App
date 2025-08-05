@@ -1,0 +1,41 @@
+import React from 'react';
+import Skeleton from './Skeleton';
+
+const MissionListSkeleton: React.FC = () => {
+  return (
+    <div className="space-y-4">
+      {[...Array(4)].map((_, index) => (
+        <div key={index} className="bg-white rounded-2xl p-6 border border-gray-100">
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-1">
+              <Skeleton className="h-6 rounded w-48 mb-2" />
+              <Skeleton className="h-4 rounded w-full mb-2" />
+              <Skeleton className="h-4 rounded w-3/4" />
+            </div>
+            <Skeleton className="w-12 h-12 rounded-xl ml-4" />
+          </div>
+
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <Skeleton className="h-4 rounded w-16 mb-1" />
+              <Skeleton className="h-4 rounded w-12" />
+            </div>
+            <div className="text-right">
+              <Skeleton className="h-4 rounded w-20 mb-1" />
+              <Skeleton className="w-6 h-6 rounded" />
+            </div>
+          </div>
+
+          <Skeleton className="w-full h-2 rounded-full mb-4" />
+
+          <div className="flex gap-3">
+            <Skeleton className="flex-1 h-12 rounded-xl" />
+            <Skeleton className="w-12 h-12 rounded-xl" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default MissionListSkeleton;
