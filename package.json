@@ -11,6 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@googlemaps/react-wrapper": "^1.2.0",
     "@tailwindcss/postcss": "^4.1.11",
     "axios": "^1.11.0",
     "lucide-react": "^0.534.0",
@@ -23,6 +24,7 @@
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
+    "@types/google.maps": "^3.58.1",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
@@ -31,7 +33,7 @@
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
-    "typescript": "^5.2.2",
+    "typescript": "^5.8.3",
     "vite": "^7.0.6",
     "vite-plugin-singlefile": "^2.3.0"
   }
