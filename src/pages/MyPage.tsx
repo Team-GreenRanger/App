@@ -107,7 +107,9 @@ const MyPage: React.FC = () => {
 
   const handleCopyToClipboard = () => {
     if (profile && statistics) {
-      const textToCopy = `Hello! I'm ${profile.name}, Level ${statistics.currentLevel}. I have ${statistics.currentCarbonCredits} carbon credits!`;
+      const textToCopy = `Hello! I'm ${profile.name}, Level ${
+        statistics.currentLevel || 1
+      }. I have ${statistics.currentCarbonCredits || 0} carbon credits!`;
       copyToClipboard(textToCopy);
       showModal(
         "info",
@@ -132,7 +134,11 @@ const MyPage: React.FC = () => {
   const handleShare = () => {
     if (profile && statistics) {
       share({
-        text: `I reached Level ${statistics.currentLevel} on EcoLife app! I earned ${statistics.currentCarbonCredits} carbon credits.`,
+        text: `I reached Level ${
+          statistics.currentLevel || 1
+        } on EcoLife app! I earned ${
+          statistics.currentCarbonCredits || 0
+        } carbon credits.`,
         title: "Share EcoLife Achievement",
       });
     }
@@ -277,9 +283,9 @@ const MyPage: React.FC = () => {
 
   const getLevelProgress = () => {
     if (!statistics) return 0;
-    const currentLevel = statistics.currentLevel;
+    const currentLevel = statistics.currentLevel || 1;
     const nextLevelRequirement = currentLevel * 1000;
-    const currentProgress = statistics.totalMissionsCompleted * 100;
+    const currentProgress = (statistics.totalMissionsCompleted || 0) * 100;
     return Math.min((currentProgress / nextLevelRequirement) * 100, 100);
   };
 
@@ -387,25 +393,16 @@ const MyPage: React.FC = () => {
               </div>
             </div>
           ) : statistics ? (
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* 두 개 카드를 나란히 배치 */}
               <div className="grid grid-cols-2 gap-4">
                 <StatCard
-                  value={`${statistics.totalCo2Reduction}kg`}
+                  value={`${statistics.totalCo2Reduction || 0}kg`}
                   label="Total CO2 Saved"
-                  color="green"
                 />
                 <StatCard
-                  value={statistics.currentCarbonCredits.toLocaleString()}
-                  label="Carbon Credits"
-                  color="blue"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <StatCard
-                  value={statistics.totalMissionsCompleted.toString()}
+                  value={(statistics.totalMissionsCompleted || 0).toString()}
                   label="Missions Completed"
-                  color="purple"
                 />
               </div>
 
@@ -414,7 +411,7 @@ const MyPage: React.FC = () => {
                   Carbon Credit
                 </h3>
                 <CarbonCreditCard
-                  points={statistics.currentCarbonCredits}
+                  points={statistics.currentCarbonCredits || 0}
                   onClick={handleCarbonCreditClick}
                 />
               </div>
@@ -454,7 +451,7 @@ const MyPage: React.FC = () => {
 
                 <button
                   onClick={handleShare}
-                  className="w-full bg-purple-500 text-white py-2 px-3 rounded-lg hover:bg-purple-600 transition-colors text-sm flex items-center justify-center gap-1"
+                  className="w-full bg-emerald-500 text-white py-2 px-3 rounded-lg hover:bg-emerald-600 transition-colors text-sm flex items-center justify-center gap-1"
                 >
                   <Share2 className="w-4 h-4" />
                   Share Achievement
@@ -521,7 +518,7 @@ const MyPage: React.FC = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600">Member Since</span>
                 <span className="text-gray-900">
-                  {statistics.daysSinceJoined} days ago
+                  {statistics.daysSinceJoined || 0} days ago
                 </span>
               </div>
               <div className="flex justify-between">
