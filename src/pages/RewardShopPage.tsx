@@ -4,7 +4,7 @@ import { useAndroidApi } from "../hooks";
 import { HiChevronLeft, HiOutlineSparkles } from "react-icons/hi";
 import { getCarbonCreditBalance } from "../utils/carbon-credit.utils";
 import { Reward } from "../types";
-import { getRewards } from "../utils";
+import { getRewards, redeemReward } from "../utils";
 
 const RewardShopPage = () => {
   const navigate = useNavigate();
@@ -13,6 +13,9 @@ const RewardShopPage = () => {
   const [balance, setBalance] = useState(0);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [purchasingRewards, setPurchasingRewards] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     const loadData = async () => {
@@ -47,7 +50,7 @@ const RewardShopPage = () => {
     navigate(-1);
   };
 
-  const handlePurchase = (reward: Reward) => {
+  const handlePurchase = async (reward: Reward) => {
     vibrate({ duration: 100 });
 
     if (reward.status !== "AVAILABLE") {
@@ -65,9 +68,59 @@ const RewardShopPage = () => {
       return;
     }
 
-    showToast({
-      message: `Successfully purchased ${reward.name}! Check My Rewards to use it.`,
-    });
+    // 이미 구매 중인 리워드인지 확인
+    if (purchasingRewards.has(reward.id)) {
+      return;
+    }
+
+    try {
+      // 구매 중 상태로 설정
+      setPurchasingRewards((prev) => new Set([...prev, reward.id]));
+
+      // 물리적 상품의 경우 배송 주소가 필요할 수 있음
+      let deliveryAddress: string | undefined;
+      if (reward.type === "PHYSICAL_ITEM" || reward.type === "ECO_PRODUCT") {
+        // 실제 앱에서는 사용자 설정에서 가져오거나 입력받아야 함
+        // 여기서는 예시로 undefined로 설정 (서버에서 기본 주소 사용)
+        deliveryAddress = undefined;
+      }
+
+      const result = await redeemReward(reward.id, deliveryAddress);
+
+      // 성공적으로 구매한 경우
+      showToast({
+        message: `Successfully purchased ${reward.name}! Check My Rewards to use it.`,
+      });
+
+      // 잔액 업데이트
+      setBalance((prev) => prev - reward.cost);
+
+      // 리워드 수량 업데이트
+      setRewards((prev) =>
+        prev.map((r) =>
+          r.id === reward.id
+            ? { ...r, availableQuantity: r.availableQuantity - 1 }
+            : r
+        )
+      );
+    } catch (error) {
+      console.error("리워드 구매 실패:", error);
+
+      // 에러 메시지 표시
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to purchase reward. Please try again.";
+
+      showToast({ message: errorMessage });
+    } finally {
+      // 구매 중 상태 해제
+      setPurchasingRewards((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(reward.id);
+        return newSet;
+      });
+    }
   };
 
   // 탭에 따른 리워드 필터링
@@ -127,76 +180,84 @@ const RewardShopPage = () => {
 
       <div className="px-4 pb-20 pt-4">
         <div className="space-y-3">
-          {filteredRewards.map((reward) => (
-            <div
-              key={reward.id}
-              className="bg-white rounded-lg p-4 border border-gray-100"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 mb-1">
-                    {reward.name}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {reward.description}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`text-xs px-2 py-1 rounded ${
-                        reward.status === "AVAILABLE"
-                          ? "bg-green-100 text-green-800"
-                          : reward.status === "OUT_OF_STOCK"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {reward.status}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {reward.availableQuantity} available
-                    </span>
+          {filteredRewards.map((reward) => {
+            const isPurchasing = purchasingRewards.has(reward.id);
+            const isDisabled =
+              reward.status !== "AVAILABLE" ||
+              balance < reward.cost ||
+              reward.availableQuantity <= 0 ||
+              isPurchasing;
+
+            return (
+              <div
+                key={reward.id}
+                className="bg-white rounded-lg p-4 border border-gray-100"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-1">
+                      {reward.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {reward.description}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${
+                          reward.status === "AVAILABLE"
+                            ? "bg-green-100 text-green-800"
+                            : reward.status === "OUT_OF_STOCK"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {reward.status}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {reward.availableQuantity} available
+                      </span>
+                    </div>
                   </div>
+                  {reward.imageUrl && (
+                    <img
+                      src={reward.imageUrl}
+                      alt={reward.name}
+                      className="w-16 h-16 object-cover rounded-lg ml-4"
+                    />
+                  )}
                 </div>
-                {reward.imageUrl && (
-                  <img
-                    src={reward.imageUrl}
-                    alt={reward.name}
-                    className="w-16 h-16 object-cover rounded-lg ml-4"
-                  />
-                )}
-              </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-green-600">
-                  {reward.cost} points
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-green-600">
+                    {reward.cost} points
+                  </span>
 
-                <button
-                  onClick={() => handlePurchase(reward)}
-                  disabled={
-                    reward.status !== "AVAILABLE" ||
-                    balance < reward.cost ||
-                    reward.availableQuantity <= 0
-                  }
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    reward.status === "AVAILABLE" &&
-                    balance >= reward.cost &&
-                    reward.availableQuantity > 0
-                      ? "bg-blue-500 hover:bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  }`}
-                >
-                  {reward.status !== "AVAILABLE"
-                    ? "Unavailable"
-                    : reward.availableQuantity <= 0
-                    ? "Out of Stock"
-                    : balance < reward.cost
-                    ? "Not enough points"
-                    : "Purchase"}
-                </button>
+                  <button
+                    onClick={() => handlePurchase(reward)}
+                    disabled={isDisabled}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                      !isDisabled
+                        ? "bg-blue-500 hover:bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    }`}
+                  >
+                    {isPurchasing && (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                    )}
+                    {isPurchasing
+                      ? "Purchasing..."
+                      : reward.status !== "AVAILABLE"
+                      ? "Unavailable"
+                      : reward.availableQuantity <= 0
+                      ? "Out of Stock"
+                      : balance < reward.cost
+                      ? "Not enough points"
+                      : "Purchase"}
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {filteredRewards.length === 0 && (

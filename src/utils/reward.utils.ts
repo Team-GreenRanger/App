@@ -3,6 +3,7 @@ import {
   UserRewardsResponse,
   UserRewardsParams,
   RewardResponse,
+  UserReward,
 } from "../types";
 
 export const getRewards = async (): Promise<RewardResponse> => {
@@ -29,6 +30,40 @@ export const getUserRewards = async (
   } catch (error) {
     console.error("Failed to fetch user rewards:", error);
     throw new Error("내 리워드를 불러오는데 실패했습니다.");
+  }
+};
+
+// 리워드 수령 API
+export const redeemReward = async (
+  rewardId: string,
+  deliveryAddress?: string
+): Promise<UserReward> => {
+  try {
+    const requestBody: { rewardId: string; deliveryAddress?: string } = {
+      rewardId,
+    };
+
+    if (deliveryAddress) {
+      requestBody.deliveryAddress = deliveryAddress;
+    }
+
+    const response = await privateApi.post<UserReward>(
+      "/rewards/redeem",
+      requestBody
+    );
+    return response.data;
+  } catch (error: unknown) {
+    console.error("Failed to redeem reward:", error);
+
+    // axios 에러인지 확인
+    if (error && typeof error === "object" && "response" in error) {
+      const axiosError = error as { response: { status: number } };
+      if (axiosError.response?.status === 400) {
+        throw new Error("포인트가 부족하거나 리워드를 사용할 수 없습니다.");
+      }
+    }
+
+    throw new Error("리워드 수령에 실패했습니다.");
   }
 };
 
