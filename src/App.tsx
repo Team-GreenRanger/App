@@ -63,8 +63,8 @@ const NavigationController: React.FC = () => {
       "/camera",
       "/mission-complete",
       "/ai-chat",
-      "/ai-trash-camera", // AI 쓰레기 카메라 페이지
-      "/ai-trash-result", // AI 쓰레기 결과 페이지
+      "/ai-trash-camera",
+      "/ai-trash-result",
     ];
 
     // 정확한 경로 매칭
