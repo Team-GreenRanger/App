@@ -1,5 +1,5 @@
-import React from 'react';
-import { HiLightBulb } from 'react-icons/hi';
+import React from "react";
+import { HiLightBulb } from "react-icons/hi";
 
 interface EcoTipCardProps {
   title: string;
@@ -7,10 +7,10 @@ interface EcoTipCardProps {
   icon?: React.ReactNode;
 }
 
-const EcoTipCard: React.FC<EcoTipCardProps> = ({ 
-  title, 
-  description, 
-  icon = <HiLightBulb className="w-6 h-6 text-blue-600" /> 
+const EcoTipCard: React.FC<EcoTipCardProps> = ({
+  title,
+  description,
+  icon = <HiLightBulb className="w-6 h-6 text-blue-600" />,
 }) => {
   return (
     <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-blue-900">
@@ -19,7 +19,12 @@ const EcoTipCard: React.FC<EcoTipCardProps> = ({
         {title}
       </h3>
       <p className="text-sm leading-relaxed text-blue-700">
-        {description}
+        {description.split("\n").map((line, index) => (
+          <React.Fragment key={index}>
+            {line}
+            <br />
+          </React.Fragment>
+        ))}
       </p>
     </div>
   );

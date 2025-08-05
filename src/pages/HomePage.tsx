@@ -131,10 +131,17 @@ const HomePage = () => {
               </>
             ) : (
               <>
-                <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <span className="text-blue-700 font-semibold text-sm">
+                <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-violet-300 to-blue-400 rounded-full ">
+                  {" "}
+                  <span className="text-white font-semibold text-sm">
                     {statistics?.totalCo2Reduction || 0}kg CO₂ saved
+                  </span>
+                </div>
+
+                <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-400 to-green-300 rounded-full ">
+                  {" "}
+                  <span className="text-white font-semibold text-sm">
+                    {statistics?.totalMissionsCompleted || 0} mission completed
                   </span>
                 </div>
               </>
