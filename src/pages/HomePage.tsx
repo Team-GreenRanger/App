@@ -32,15 +32,18 @@ const HomePage = () => {
     // 캐시된 사용자 데이터가 있으면 먼저 표시
     const cachedUser = userCache.get();
     if (cachedUser) {
-      setProfile(prev => ({
-        ...prev,
-        name: cachedUser.name,
-        email: cachedUser.email || '',
-        profileImageUrl: cachedUser.profileImageUrl,
-        isVerified: false,
-        status: 'ACTIVE',
-        createdAt: ''
-      } as UserProfile));
+      setProfile(
+        (prev) =>
+          ({
+            ...prev,
+            name: cachedUser.name,
+            email: cachedUser.email || "",
+            profileImageUrl: cachedUser.profileImageUrl,
+            isVerified: false,
+            status: "ACTIVE",
+            createdAt: "",
+          } as UserProfile)
+      );
       setIsLoadingProfile(false);
     }
 
@@ -60,9 +63,8 @@ const HomePage = () => {
       userCache.set({
         name: profileResponse.data.name,
         email: profileResponse.data.email,
-        profileImageUrl: profileResponse.data.profileImageUrl
+        profileImageUrl: profileResponse.data.profileImageUrl,
       });
-
     } catch (error) {
       console.error("Failed to load homepage data:", error);
     } finally {
@@ -133,13 +135,6 @@ const HomePage = () => {
                   <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
                   <span className="text-blue-700 font-semibold text-sm">
                     {statistics?.totalCo2Reduction || 0}kg CO₂ saved
-                  </span>
-                </div>
-
-                <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-50 to-purple-100 rounded-full border border-purple-200">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-                  <span className="text-purple-700 font-semibold text-sm">
-                    #{statistics?.globalRanking || 999} rank
                   </span>
                 </div>
               </>
