@@ -278,6 +278,49 @@ class AndroidApiService {
     }
   }
 
+  // 위치 관련 API 추가
+  public async getCurrentLocation(): Promise<any> {
+    try {
+      const bridge = this.ensureBridge();
+      const result = bridge.getCurrentLocation();
+      return JSON.parse(result);
+    } catch (error) {
+      console.error('위치 조회 실패:', error);
+      return { error: '위치 조회 실패' };
+    }
+  }
+
+  public async requestLocationUpdates(callback: (location: any) => void): Promise<boolean> {
+    try {
+      const bridge = this.ensureBridge();
+      
+      // 콜백 함수를 글로벌에 등록
+      const callbackName = 'locationUpdateCallback_' + Date.now();
+      (window as any)[callbackName] = (locationJson: string) => {
+        try {
+          const location = JSON.parse(locationJson);
+          callback(location);
+        } catch (e) {
+          console.error('위치 업데이트 파싱 오류:', e);
+        }
+      };
+      
+      return bridge.requestLocationUpdates(callbackName);
+    } catch (error) {
+      console.error('위치 업데이트 요청 실패:', error);
+      return false;
+    }
+  }
+
+  public stopLocationUpdates(): void {
+    try {
+      const bridge = this.ensureBridge();
+      bridge.stopLocationUpdates();
+    } catch (error) {
+      console.error('위치 업데이트 중지 실패:', error);
+    }
+  }
+
   public isAvailable(): boolean {
     return this.isReady && this.bridge !== null;
   }

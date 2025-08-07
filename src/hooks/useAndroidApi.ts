@@ -113,6 +113,19 @@ export const useAndroidApi = () => {
     AndroidApi.log(message);
   }, []);
 
+  // 위치 관련 API 추가
+  const getCurrentLocation = useCallback(async () => {
+    return executeWithLoading(() => AndroidApi.getCurrentLocation());
+  }, [executeWithLoading]);
+
+  const requestLocationUpdates = useCallback(async (callback: (location: any) => void) => {
+    return executeWithLoading(() => AndroidApi.requestLocationUpdates(callback));
+  }, [executeWithLoading]);
+
+  const stopLocationUpdates = useCallback(() => {
+    AndroidApi.stopLocationUpdates();
+  }, []);
+
   return {
     isAvailable,
     isLoading,
@@ -134,6 +147,9 @@ export const useAndroidApi = () => {
     showBottomNavigation,
     finishApp,
     restartApp,
-    log
+    log,
+    getCurrentLocation,
+    requestLocationUpdates,
+    stopLocationUpdates
   };
 };

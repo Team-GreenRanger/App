@@ -1,15 +1,18 @@
 import climate_change from "../assets/images/climate change.svg";
 import weather from "../assets/images/weather.png";
 import { useNavigate } from "react-router-dom";
+import { AndroidApi } from "../api";
 
 const EducationPage = () => {
   const navigate = useNavigate();
 
   const handleLearnClimateChange = () => {
+    AndroidApi.vibrate({ duration: 100 });
     navigate("/education/climate-change");
   };
 
   const handleLearnExtremeWeather = () => {
+    AndroidApi.vibrate({ duration: 100 });
     navigate("/education/extreme-weather");
   };
 

@@ -7,6 +7,8 @@ import {
   RankingUser,
   RankingScope,
 } from "../types";
+import { AndroidApi } from "../api";
+import { HiShare } from "react-icons/hi";
 
 const RankingPage = () => {
   const { updateBottomNavigation, vibrate, showToast } = useAndroidApi();
@@ -105,6 +107,23 @@ const RankingPage = () => {
     return "—";
   };
 
+  const handleShareRank = async () => {
+    AndroidApi.vibrate({ duration: 100 });
+    const rank = getCurrentUserRank();
+    const scopeText = activeScopeTab === 'GLOBAL' ? 'worldwide' : 'locally';
+    const shareText = `I'm ranked #${rank} ${scopeText} in the EcoLife Application!`;
+    
+    try {
+      await AndroidApi.share({
+        text: shareText,
+        title: "My EcoLife Ranking"
+      });
+    } catch (error) {
+      console.error("Failed to share ranking:", error);
+      showToast({ message: "Failed to share ranking" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-gray-50 px-6 py-6">
@@ -157,6 +176,13 @@ const RankingPage = () => {
             <div className="mt-2 text-xs text-gray-500">
               {activeScopeTab === 'LOCAL' ? '🏠 Local Rankings' : '🌍 Global Rankings'} • This Month
             </div>
+            <button
+              onClick={handleShareRank}
+              className="mt-3 w-full flex items-center justify-center gap-2 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors"
+            >
+              <HiShare className="w-4 h-4" />
+              <span className="text-sm font-medium">Share My Rank</span>
+            </button>
           </div>
         )}
       </div>

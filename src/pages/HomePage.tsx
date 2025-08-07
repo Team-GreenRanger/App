@@ -12,6 +12,7 @@ import { privateApi } from "../api";
 import { UserProfile, UserStatistics, EcoTip } from "../types";
 import { HiSparkles, HiGlobeAlt } from "react-icons/hi";
 import { userCache } from "../utils";
+import { AndroidApi } from "../api";
 
 const HomePage = () => {
   const { updateBottomNavigation, showToast } = useAndroidApi();
@@ -48,37 +49,51 @@ const HomePage = () => {
     }
 
     try {
-      const [profileResponse, statsResponse, ecoTipResponse] =
-        await Promise.all([
-          privateApi.get<UserProfile>("/users/profile"),
-          privateApi.get<UserStatistics>("/users/statistics"),
-          privateApi.get<EcoTip>("/ai/eco-tip"),
-        ]);
+      // First load profile and statistics
+      const [profileResponse, statsResponse] = await Promise.all([
+        privateApi.get<UserProfile>("/users/profile"),
+        privateApi.get<UserStatistics>("/users/statistics"),
+      ]);
 
       setProfile(profileResponse.data);
       setStatistics(statsResponse.data);
-      setEcoTip(ecoTipResponse.data);
+      setIsLoadingProfile(false);
+      setIsLoadingStats(false);
 
-      // 사용자 정보 캐싱
+      // Cache user information
       userCache.set({
         name: profileResponse.data.name,
         email: profileResponse.data.email,
         profileImageUrl: profileResponse.data.profileImageUrl,
       });
+
+      // Then load eco-tip separately
+      loadEcoTip();
     } catch (error) {
       console.error("Failed to load homepage data:", error);
-    } finally {
       setIsLoadingProfile(false);
       setIsLoadingStats(false);
+    }
+  };
+
+  const loadEcoTip = async () => {
+    try {
+      const ecoTipResponse = await privateApi.get<EcoTip>("/ai/eco-tip");
+      setEcoTip(ecoTipResponse.data);
+    } catch (error) {
+      console.error("Failed to load eco-tip:", error);
+    } finally {
       setIsLoadingTip(false);
     }
   };
 
   const handleCarbonCreditClick = () => {
+    AndroidApi.vibrate({ duration: 100 });
     navigate("/my/credit");
   };
 
   const handleStartLearning = () => {
+    AndroidApi.vibrate({ duration: 100 });
     showToast({ message: "Starting learning program!" });
     navigate("/education");
   };

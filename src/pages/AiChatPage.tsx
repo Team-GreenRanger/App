@@ -154,20 +154,26 @@ const ChatPage = () => {
             )}
 
             <div className="space-y-4">
-              {messages.map((message, index) => (
-                <div
-                  key={message.id || index}
-                  className={`flex ${
-                    message.isUser ? "justify-end" : "justify-start"
-                  }`}
-                >
+              {messages.map((message, index) => {
+                const isLastAiMessage = !message.isUser && index === messages.length - 1;
+                
+                return (
                   <div
-                    className={`rounded-2xl px-4 py-3 max-w-[320px] ${
-                      message.isUser
-                        ? "bg-gray-100 rounded-tr-md text-gray-900"
-                        : "bg-green-500 rounded-tl-md text-white"
+                    key={message.id || index}
+                    className={`flex ${
+                      message.isUser ? "justify-end" : "justify-start"
                     }`}
+                    style={{
+                      marginBottom: isLastAiMessage ? "200px" : undefined
+                    }}
                   >
+                    <div
+                      className={`rounded-2xl px-4 py-3 max-w-[320px] ${
+                        message.isUser
+                          ? "bg-gray-100 rounded-tr-md text-gray-900"
+                          : "bg-green-500 rounded-tl-md text-white"
+                      }`}
+                    >
                     {message.isUser ? (
                       <p>{message.text}</p>
                     ) : (
@@ -191,9 +197,10 @@ const ChatPage = () => {
                         </div>
                       </div>
                     )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {isLoading && (
                 <div className="flex justify-start">

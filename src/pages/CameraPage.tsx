@@ -4,6 +4,7 @@ import { RotateCcw, ArrowLeft, Check, AlertCircle } from "lucide-react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useImageUpload, useMissions } from "../hooks";
 import { MissionSubmissionLoading } from "../components";
+import { AndroidApi } from "../api";
 
 const CameraPage = () => {
   const webcamRef = useRef<Webcam>(null);
@@ -31,6 +32,7 @@ const CameraPage = () => {
   };
 
   const capturePhoto = useCallback(() => {
+    AndroidApi.vibrate({ duration: 150 });
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot();
       if (imageSrc) {
@@ -40,10 +42,12 @@ const CameraPage = () => {
   }, []);
 
   const switchCamera = () => {
+    AndroidApi.vibrate({ duration: 100 });
     setFacingMode(facingMode === "user" ? "environment" : "user");
   };
 
   const retakePhoto = () => {
+    AndroidApi.vibrate({ duration: 100 });
     setCapturedImage(null);
   };
 
@@ -72,6 +76,7 @@ const CameraPage = () => {
       return;
     }
 
+    AndroidApi.vibrate({ duration: 200 });
     setIsSubmitting(true);
 
     try {
@@ -94,6 +99,7 @@ const CameraPage = () => {
   };
 
   const goBack = () => {
+    AndroidApi.vibrate({ duration: 100 });
     navigate(-1);
   };
 

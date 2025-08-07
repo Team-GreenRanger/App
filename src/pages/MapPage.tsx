@@ -38,7 +38,7 @@ interface NavigationState {
 }
 
 const MapPage: React.FC = () => {
-  const { updateBottomNavigation, getSystemInfo, showToast } = useAndroidApi();
+  const { updateBottomNavigation, getCurrentLocation, requestLocationUpdates, stopLocationUpdates, showToast } = useAndroidApi();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<PlaceResult[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null);
@@ -51,13 +51,20 @@ const MapPage: React.FC = () => {
   const [bikeStations, setBikeStations] = useState<BikeStation[]>([]);
   const [bikeMarkers, setBikeMarkers] = useState<google.maps.Marker[]>([]);
   const [showBikeWarning, setShowBikeWarning] = useState(false);
+  const [userLocationMarker, setUserLocationMarker] = useState<google.maps.Marker | null>(null); // 사용자 위치 마커
+  const [previousStationCount, setPreviousStationCount] = useState<number>(0); // 이전 대여소 개수 추적
   const lastApiCallRef = useRef<number>(0);
   const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialLoadRef = useRef<boolean>(true);
 
   useEffect(() => {
     updateBottomNavigation("map");
-    getCurrentLocation();
+    initializeLocation();
+    
+    // 컴포넌트 언마운트 시 위치 업데이트 중지
+    return () => {
+      stopLocationUpdates();
+    };
   }, [updateBottomNavigation]);
 
   useEffect(() => {
@@ -218,12 +225,58 @@ const MapPage: React.FC = () => {
     }, 1000); // 1초로 늘림 - 사용자가 1초간 아무것도 안 할 때만 호출
   }, [map, fetchBikeStations]); // currentLocation 제거!
 
-  const getCurrentLocation = () => {
-    console.log('Getting current location...');
+  // Android API를 사용한 위치 초기화
+  const initializeLocation = async () => {
+    console.log('📍 위치 초기화 시작');
+    
+    try {
+      // 현재 위치 가져오기 (Hook에서 가져온 함수 사용)
+      const location = await getCurrentLocation();
+      
+      if (location && !location.error) {
+        console.log('✅ Android API로 위치 획득:', location);
+        const newLocation = {
+          lat: location.latitude,
+          lng: location.longitude
+        };
+        setCurrentLocation(newLocation);
+        
+        // 지도가 로드되면 중심 이동
+        if (map) {
+          map.setCenter(newLocation);
+          updateUserLocationMarker(newLocation);
+        }
+        
+        // 위치 업데이트 시작
+        requestLocationUpdates((updatedLocation) => {
+          console.log('📍 위치 업데이트:', updatedLocation);
+          if (!updatedLocation.error) {
+            const newLoc = {
+              lat: updatedLocation.latitude,
+              lng: updatedLocation.longitude
+            };
+            setCurrentLocation(newLoc);
+            updateUserLocationMarker(newLoc);
+          }
+        });
+        
+      } else {
+        console.log('⚠️ Android API 실패, 브라우저 API 사용');
+        fallbackToNavigatorGeolocation();
+      }
+    } catch (error) {
+      console.error('🚫 Android 위치 API 오류:', error);
+      fallbackToNavigatorGeolocation();
+    }
+  };
+
+  // 브라우저 Geolocation API 폴백
+  const fallbackToNavigatorGeolocation = () => {
+    console.log('🌐 브라우저 Geolocation API 사용');
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          console.log('Location obtained:', position.coords);
+          console.log('✅ 브라우저로 위치 획득:', position.coords);
           const location = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
@@ -231,10 +284,11 @@ const MapPage: React.FC = () => {
           setCurrentLocation(location);
           if (map) {
             map.setCenter(location);
+            updateUserLocationMarker(location);
           }
         },
         (error) => {
-          console.error("Location error:", error);
+          console.error("🚫 브라우저 위치 오류:", error);
           const defaultLocation = { lat: 37.5665, lng: 126.9780 };
           setCurrentLocation(defaultLocation);
           if (map) {
@@ -245,32 +299,193 @@ const MapPage: React.FC = () => {
     }
   };
 
+  // 사용자 위치 마커 업데이트 (보라색 점)
+  const updateUserLocationMarker = (location: {lat: number, lng: number}) => {
+    if (!map) return;
+    
+    // 기존 마커 제거
+    if (userLocationMarker) {
+      userLocationMarker.setMap(null);
+    }
+    
+    // 보라색 점 마커 생성
+    const userMarker = new google.maps.Marker({
+      position: location,
+      map: map,
+      title: "내 위치",
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 10, // 조금 더 크게
+        fillColor: '#9C27B0', // 보라색
+        fillOpacity: 1,
+        strokeWeight: 3,
+        strokeColor: '#FFFFFF',
+        strokeOpacity: 1
+      },
+      zIndex: 1000 // 다른 마커보다 위에 표시
+    });
+    
+    setUserLocationMarker(userMarker);
+    console.log('📍 사용자 위치 마커 업데이트 (보라색):', location);
+  };
+
+  // 사용자가 현재 위치로 지도 이동 (버튼용)
+  const moveToCurrentLocation = async () => {
+    console.log('🎯 현재 위치로 이동 시도');
+    
+    try {
+      const location = await getCurrentLocation();
+      
+      if (location && !location.error) {
+        const newLocation = {
+          lat: location.latitude,
+          lng: location.longitude
+        };
+        setCurrentLocation(newLocation);
+        
+        if (map) {
+          map.setCenter(newLocation);
+          map.setZoom(16); // 좀 더 확대
+          updateUserLocationMarker(newLocation);
+        }
+        
+        showToast({ message: '현재 위치로 이동했습니다' });
+      } else {
+        fallbackToNavigatorGeolocation();
+      }
+    } catch (error) {
+      console.error('🚫 위치 이동 실패:', error);
+      fallbackToNavigatorGeolocation();
+    }
+  };
+
+  // 경로 주변 자전거 대여소 필터링 (경로 표시 중일 때만)
+  const filterStationsNearRoute = (stations: BikeStation[]): BikeStation[] => {
+    if (!navigation.route || !navigation.isNavigating) {
+      return stations; // 경로 없으면 모든 대여소 표시
+    }
+
+    const route = navigation.route.routes[0];
+    if (!route || !route.legs) return stations;
+
+    const routePath: google.maps.LatLng[] = [];
+    route.legs.forEach(leg => {
+      leg.steps?.forEach(step => {
+        if (step.path) {
+          routePath.push(...step.path);
+        }
+      });
+    });
+
+    if (routePath.length === 0) return stations;
+
+    // 경로에서 500m 이내의 대여소만 필터링
+    const filteredStations = stations.filter(station => {
+      const stationPos = new google.maps.LatLng(
+        parseFloat(station.latitude),
+        parseFloat(station.longitude)
+      );
+
+      return routePath.some(routePoint => {
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+          stationPos,
+          routePoint
+        );
+        return distance <= 500; // 500m 이내
+      });
+    });
+
+    console.log(`🛣️ 경로 주변 필터링: ${stations.length}개 → ${filteredStations.length}개`);
+    return filteredStations;
+  };
+
   const displayBikeMarkers = (stations: BikeStation[]) => {
     if (!map) {
       console.log('No map available for displaying markers');
       return;
     }
 
-    console.log(`Displaying ${stations.length} bike markers`);
+    // 항상 기존 마커를 먼저 완전히 제거
+    console.log('🧹 기존 마커 완전 제거');
     clearBikeMarkers();
 
+    // 경로 표시 중이면 경로 주변 대여소만 표시
+    let filteredStations = filterStationsNearRoute(stations);
+    
+    // 현재 지도 viewport 내의 대여소만 필터링
+    const bounds = map.getBounds();
+    if (bounds) {
+      filteredStations = filteredStations.filter(station => {
+        const stationPos = new google.maps.LatLng(
+          parseFloat(station.latitude),
+          parseFloat(station.longitude)
+        );
+        return bounds.contains(stationPos);
+      });
+    }
+    
+    console.log(`Displaying ${filteredStations.length} bike markers (viewport filtered)`);
+    
+    // 마커 개수 업데이트
+    setPreviousStationCount(filteredStations.length);
+
+    // 10개 이상이면 작은 파란색 점으로 표시
+    if (filteredStations.length >= 10) {
+      console.log(`🚲 자전거 대여소가 10개 이상 (${filteredStations.length}개), 파란색 점으로 표시`);
+      createDotMarkers(filteredStations);
+    } else {
+      // 10개 이하면 아이콘 마커 사용
+      console.log(`🚲 자전거 대여소 10개 이하 (${filteredStations.length}개), 아이콘 마커 표시`);
+      createIconMarkers(filteredStations);
+    }
+  };
+
+  // 파란색 점 마커 생성
+  const createDotMarkers = (stations: BikeStation[]) => {
     const markers = stations.map((station) => {
-      // 기존 bike_icon.svg 사용 + 더 큰 파란색 배경
+      const marker = new google.maps.Marker({
+        position: {
+          lat: parseFloat(station.latitude),
+          lng: parseFloat(station.longitude)
+        },
+        map: map,
+        title: `${station.name}\n대여가능: ${station.freeBikes}개\n전체: ${station.totalSlots}개`,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 4,
+          fillColor: '#1976D2',
+          fillOpacity: 0.8,
+          strokeWeight: 2,
+          strokeColor: '#FFFFFF',
+          strokeOpacity: 1
+        },
+        optimized: false
+      });
+
+      createBikeInfoWindow(marker, station);
+      return marker;
+    });
+
+    setBikeMarkers(markers);
+  };
+
+  // 아이콘 마커 생성
+  const createIconMarkers = (stations: BikeStation[]) => {
+    const size = 36;
+    const anchor = 18;
+
+    const markers = stations.map((station) => {
       const bikeIconWithBackground = {
         url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42" width="42" height="42">
-            <!-- 더 큰 파란색 원형 배경 -->
-            <circle cx="21" cy="21" r="20" fill="#1565C0" stroke="#0D47A1" stroke-width="3"/>
-            <!-- 기존 bike_icon.svg 내용 (중앙 정렬 및 크기 조정) -->
-            <g transform="translate(6, 7.5) scale(1)">
-              <path d="M6.25 24.625C5.08968 24.625 3.97688 24.1641 3.15641 23.3436C2.33594 22.5231 1.875 21.4103 1.875 20.25C1.875 19.0897 2.33594 17.9769 3.15641 17.1564C3.97688 16.3359 5.08968 15.875 6.25 15.875C7.41032 15.875 8.52312 16.3359 9.34359 17.1564C10.1641 17.9769 10.625 19.0897 10.625 20.25C10.625 21.4103 10.1641 22.5231 9.34359 23.3436C8.52312 24.1641 7.41032 24.625 6.25 24.625ZM6.25 14C4.5924 14 3.00269 14.6585 1.83058 15.8306C0.65848 17.0027 0 18.5924 0 20.25C0 21.9076 0.65848 23.4973 1.83058 24.6694C3.00269 25.8415 4.5924 26.5 6.25 26.5C7.9076 26.5 9.49732 25.8415 10.6694 24.6694C11.8415 23.4973 12.5 21.9076 12.5 20.25C12.5 18.5924 11.8415 17.0027 10.6694 15.8306C9.49732 14.6585 7.9076 14 6.25 14ZM18.5 11.5H23.75V9.25H19.75L17.325 5.1625C16.9625 4.5375 16.25 4.125 15.5 4.125C14.9125 4.125 14.375 4.3625 14 4.75L9.375 9.3625C8.9875 9.75 8.75 10.25 8.75 10.875C8.75 11.6625 9.1625 12.325 9.8125 12.7125L14 15.25V21.5H16.25V13.375L13.4375 11.3125L16.3375 8.375M23.75 24.625C22.5897 24.625 21.4769 24.1641 20.6564 23.3436C19.8359 22.5231 19.375 21.4103 19.375 20.25C19.375 19.0897 19.8359 17.9769 20.6564 17.1564C21.4769 16.3359 22.5897 15.875 23.75 15.875C24.9103 15.875 26.0231 16.3359 26.8436 17.1564C27.6641 17.9769 28.125 19.0897 28.125 20.25C28.125 21.4103 27.6641 22.5231 26.8436 23.3436C26.0231 24.1641 24.9103 24.625 23.75 24.625ZM23.75 14C22.0924 14 20.5027 14.6585 19.3306 15.8306C18.1585 17.0027 17.5 18.5924 17.5 20.25C17.5 21.9076 18.1585 23.4973 19.3306 24.6694C20.5027 25.8415 22.0924 26.5 23.75 26.5C24.5708 26.5 25.3835 26.3383 26.1418 26.0242C26.9001 25.7102 27.5891 25.2498 28.1694 24.6694C28.7498 24.0891 29.2102 23.4001 29.5242 22.6418C29.8383 21.8835 30 21.0708 30 20.25C30 19.4292 29.8383 18.6165 29.5242 17.8582C29.2102 17.0999 28.7498 16.4109 28.1694 15.8306C27.5891 15.2502 26.9001 14.7898 26.1418 14.4758C25.3835 14.1617 24.5708 14 23.75 14ZM20 5C21.25 5 22.25 4 22.25 2.75C22.25 1.5 21.25 0.5 20 0.5C18.75 0.5 17.75 1.5 17.75 2.75C17.75 4 18.75 5 20 5Z" fill="white"/>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+            <circle cx="${size/2}" cy="${size/2}" r="${(size/2) - 2}" fill="#1565C0" stroke="#0D47A1" stroke-width="2"/>
+            <g transform="translate(${(size-30)/2}, ${(size-27)/2 + 2}) scale(1)">
+              <path d="M6.25 24.625C5.08968 24.625 3.97688 24.1641 3.15641 23.3436C2.33594 22.5231 1.875 21.4103 1.875 20.25C1.875 19.0897 2.33594 17.9769 3.15641 17.1564C3.97688 16.3359 5.08968 15.875 6.25 15.875C7.41032 15.875 8.52312 16.3359 9.34359 17.1564C10.1641 17.9769 10.625 19.0897 10.625 20.25C10.625 21.4103 10.1641 22.5231 9.34359 23.3436C8.52312 24.1641 7.41032 24.625 6.25 24.625M6.25 14C4.5924 14 3.00269 14.6585 1.83058 15.8306C0.65848 17.0027 0 18.5924 0 20.25C0 21.9076 0.65848 23.4973 1.83058 24.6694C3.00269 25.8415 4.5924 26.5 6.25 26.5C7.9076 26.5 9.49732 25.8415 10.6694 24.6694C11.8415 23.4973 12.5 21.9076 12.5 20.25C12.5 18.5924 11.8415 17.0027 10.6694 15.8306C9.49732 14.6585 7.9076 14 6.25 14M18.5 11.5H23.75V9.25H19.75L17.325 5.1625C16.9625 4.5375 16.25 4.125 15.5 4.125C14.9125 4.125 14.375 4.3625 14 4.75L9.375 9.3625C8.9875 9.75 8.75 10.25 8.75 10.875C8.75 11.6625 9.1625 12.325 9.8125 12.7125L14 15.25V21.5H16.25V13.375L13.4375 11.3125L16.3375 8.375M23.75 24.625C22.5897 24.625 21.4769 24.1641 20.6564 23.3436C19.8359 22.5231 19.375 21.4103 19.375 20.25C19.375 19.0897 19.8359 17.9769 20.6564 17.1564C21.4769 16.3359 22.5897 15.875 23.75 15.875C24.9103 15.875 26.0231 16.3359 26.8436 17.1564C27.6641 17.9769 28.125 19.0897 28.125 20.25C28.125 21.4103 27.6641 22.5231 26.8436 23.3436C26.0231 24.1641 24.9103 24.625 23.75 24.625M23.75 14C22.0924 14 20.5027 14.6585 19.3306 15.8306C18.1585 17.0027 17.5 18.5924 17.5 20.25C17.5 21.9076 18.1585 23.4973 19.3306 24.6694C20.5027 25.8415 22.0924 26.5 23.75 26.5C24.5708 26.5 25.3835 26.3383 26.1418 26.0242C26.9001 25.7102 27.5891 25.2498 28.1694 24.6694C28.7498 24.0891 29.2102 23.4001 29.5242 22.6418C29.8383 21.8835 30 21.0708 30 20.25C30 19.4292 29.8383 18.6165 29.5242 17.8582C29.2102 17.0999 28.7498 16.4109 28.1694 15.8306C27.5891 15.2502 26.9001 14.7898 26.1418 14.4758C25.3835 14.1617 24.5708 14 23.75 14M20 5C21.25 5 22.25 4 22.25 2.75C22.25 1.5 21.25 0.5 20 0.5C18.75 0.5 17.75 1.5 17.75 2.75C17.75 4 18.75 5 20 5Z" fill="white"/>
             </g>
-            <!-- 대여 가능 수 표시 (더 큰 텍스트) -->
-            <text x="21" y="38" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">${station.freeBikes}</text>
           </svg>
         `),
-        scaledSize: new google.maps.Size(42, 42),
-        anchor: new google.maps.Point(21, 21) // 완벽한 중앙 정렬
+        scaledSize: new google.maps.Size(size, size),
+        anchor: new google.maps.Point(anchor, size - 2)
       };
 
       const marker = new google.maps.Marker({
@@ -281,40 +496,46 @@ const MapPage: React.FC = () => {
         map: map,
         title: `${station.name}\n대여가능: ${station.freeBikes}개\n전체: ${station.totalSlots}개`,
         icon: bikeIconWithBackground,
-        optimized: false // 더 좋은 렌더링
+        optimized: false
       });
 
-      const infoWindow = new google.maps.InfoWindow({
-        content: `
-          <div class="p-3 min-w-[200px]">
-            <h3 class="font-bold text-sm mb-2 text-gray-800">${station.name}</h3>
-            <p class="text-xs text-gray-600 mb-3">${station.address}</p>
-            <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-                <span class="font-medium text-blue-600">대여가능: ${station.freeBikes}개</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-gray-400"></div>
-                <span class="text-gray-600">빈자리: ${station.emptySlots}개</span>
-              </div>
-            </div>
-            <div class="mt-2 pt-2 border-t border-gray-200">
-              <p class="text-xs text-gray-500">전체: ${station.totalSlots}개 | 거리: ${station.distance}m</p>
-            </div>
-          </div>
-        `
-      });
-
-      marker.addListener('click', () => {
-        infoWindow.open(map, marker);
-      });
-
+      createBikeInfoWindow(marker, station);
       return marker;
     });
 
     setBikeMarkers(markers);
   };
+
+  // InfoWindow 생성 공통 함수
+  const createBikeInfoWindow = (marker: google.maps.Marker, station: BikeStation) => {
+    const infoWindow = new google.maps.InfoWindow({
+      content: `
+        <div class="p-3 min-w-[200px]">
+          <h3 class="font-bold text-sm mb-2 text-gray-800">${station.name}</h3>
+          <p class="text-xs text-gray-600 mb-3">${station.address}</p>
+          <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+              <span class="font-medium text-blue-600">대여가능: ${station.freeBikes}개</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-gray-400"></div>
+              <span class="text-gray-600">빈자리: ${station.emptySlots}개</span>
+            </div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-gray-200">
+            <p class="text-xs text-gray-500">전체: ${station.totalSlots}개 | 거리: ${station.distance}m</p>
+          </div>
+        </div>
+      `
+    });
+
+    marker.addListener('click', () => {
+      infoWindow.open(map, marker);
+    });
+  };
+
+
 
   const clearBikeMarkers = () => {
     console.log(`Clearing ${bikeMarkers.length} bike markers`);
@@ -369,7 +590,29 @@ const MapPage: React.FC = () => {
   };
 
   const showRoute = async (destination: PlaceResult) => {
-    if (!currentLocation || !map) return;
+    if (!map) return;
+
+    // 최신 사용자 위치 가져오기
+    let startLocation = currentLocation;
+    
+    try {
+      const freshLocation = await getCurrentLocation();
+      if (freshLocation && !freshLocation.error) {
+        startLocation = {
+          lat: freshLocation.latitude,
+          lng: freshLocation.longitude
+        };
+        setCurrentLocation(startLocation);
+        console.log('🚀 길안내용 최신 위치 획득:', startLocation);
+      }
+    } catch (error) {
+      console.log('⚠️ 최신 위치 획득 실패, 기존 위치 사용');
+    }
+    
+    if (!startLocation) {
+      showToast({ message: "현재 위치를 확인할 수 없습니다." });
+      return;
+    }
 
     const directionsService = new google.maps.DirectionsService();
     
@@ -383,7 +626,7 @@ const MapPage: React.FC = () => {
       try {
         const result = await new Promise<google.maps.DirectionsResult>((resolve, reject) => {
           const request: google.maps.DirectionsRequest = {
-            origin: currentLocation,
+            origin: startLocation,
             destination: { lat: destination.lat, lng: destination.lng },
             travelMode: mode,
             unitSystem: google.maps.UnitSystem.METRIC,
@@ -415,9 +658,9 @@ const MapPage: React.FC = () => {
           map: map,
           suppressMarkers: true,
           polylineOptions: {
-            strokeColor: mode === google.maps.TravelMode.WALKING ? '#4285F4' : 
-                        mode === google.maps.TravelMode.TRANSIT ? '#34A853' : '#EA4335',
-            strokeWeight: 4,
+            strokeColor: '#22C55E',
+            strokeWeight: 6,
+            strokeOpacity: 0.8
           }
         });
         
@@ -438,16 +681,33 @@ const MapPage: React.FC = () => {
     }
 
     showStraightLine(destination);
-    showToast({ message: "No route available. Showing straight line distance." });
+    showToast({ message: "경로를 찾을 수 없습니다. 직선거리를 표시합니다." });
   };
 
-  const showStraightLine = (destination: PlaceResult) => {
-    if (!currentLocation || !map) return;
+  const showStraightLine = async (destination: PlaceResult) => {
+    if (!map) return;
+
+    // 최신 위치 확인
+    let startLocation = currentLocation;
+    try {
+      const freshLocation = await getCurrentLocation();
+      if (freshLocation && !freshLocation.error) {
+        startLocation = {
+          lat: freshLocation.latitude,
+          lng: freshLocation.longitude
+        };
+        setCurrentLocation(startLocation);
+      }
+    } catch (error) {
+      console.log('직선거리용 위치 업데이트 실패');
+    }
+    
+    if (!startLocation) return;
 
     clearRoute();
 
     const straightLine = new google.maps.Polyline({
-      path: [currentLocation, { lat: destination.lat, lng: destination.lng }],
+      path: [startLocation, { lat: destination.lat, lng: destination.lng }],
       geodesic: true,
       strokeColor: '#FF0000',
       strokeOpacity: 0.8,
@@ -456,7 +716,7 @@ const MapPage: React.FC = () => {
     });
 
     const distance = google.maps.geometry.spherical.computeDistanceBetween(
-      new google.maps.LatLng(currentLocation.lat, currentLocation.lng),
+      new google.maps.LatLng(startLocation.lat, startLocation.lng),
       new google.maps.LatLng(destination.lat, destination.lng)
     );
 
@@ -631,7 +891,7 @@ const MapPage: React.FC = () => {
       </div>
 
       {selectedPlace && !navigation.isNavigating && (
-        <div className="absolute bottom-20 left-4 right-4 bg-white rounded-lg shadow-lg p-4 z-40">
+        <div className="absolute bottom-36 left-4 right-4 bg-white rounded-lg shadow-lg p-4 z-40">
           <div className="flex items-start gap-3 mb-4">
             <MapPin className="w-5 h-5 text-gray-600 mt-1 flex-shrink-0" />
             <div className="flex-1">
@@ -663,7 +923,7 @@ const MapPage: React.FC = () => {
       )}
 
       {navigation.isNavigating && navigation.destination && (
-        <div className="absolute bottom-20 left-4 right-4 bg-green-50 border border-green-200 rounded-lg p-4 z-40">
+        <div className="absolute bottom-36 left-4 right-4 bg-green-50 border border-green-200 rounded-lg p-4 z-40">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-sm font-medium text-green-800">Navigation Active</span>
@@ -693,8 +953,8 @@ const MapPage: React.FC = () => {
       )}
 
       <button
-        onClick={getCurrentLocation}
-        className="fixed bottom-32 right-4 z-40 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
+        onClick={moveToCurrentLocation}
+        className="fixed bottom-48 right-4 z-40 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
       >
         <Navigation className="w-6 h-6 text-blue-500" />
       </button>

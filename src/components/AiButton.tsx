@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import sparkle from "../assets/images/sparkles.svg";
 import { useNavigate } from "react-router-dom";
 import { Bot, Camera, X } from "lucide-react";
+import { AndroidApi } from "../api";
 
 interface MenuOption {
   id: string;
@@ -23,6 +24,7 @@ const AiButton = () => {
       label: "AI Chat",
       icon: <Bot className="w-5 h-5" />,
       onClick: () => {
+        AndroidApi.vibrate({ duration: 100 });
         navigate("/ai-chat");
         setIsMenuOpen(false);
       },
@@ -32,6 +34,7 @@ const AiButton = () => {
       label: "Recycle Tip",
       icon: <Camera className="w-5 h-5" />,
       onClick: () => {
+        AndroidApi.vibrate({ duration: 100 });
         navigate("/ai-trash-camera");
         setIsMenuOpen(false);
       },
@@ -69,6 +72,7 @@ const AiButton = () => {
   }, [isMenuOpen]);
 
   const handleButtonClick = () => {
+    AndroidApi.vibrate({ duration: 100 });
     setIsMenuOpen(!isMenuOpen);
   };
 

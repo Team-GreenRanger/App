@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import EducationHeader from "../components/EducationHeader";
 import LearningCard from "../components/LearningCard";
 import { AlertCircle, ArrowLeft } from "lucide-react";
+import learningData from "../assets/data/learning-data.json";
+import { AndroidApi } from "../api";
 
 // 학습 데이터 타입 정의
 interface LearningTopic {
@@ -40,32 +42,8 @@ const LearningPageViewer: React.FC<LearningPageViewerProps> = ({
   }>();
   const navigate = useNavigate();
 
-  const [learningData, setLearningData] = useState<LearningData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // JSON 데이터 로드
-  useEffect(() => {
-    const loadLearningData = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch("/learning-data.json");
-        if (!response.ok) {
-          throw new Error("Unable to load learning data.");
-        }
-        const data: LearningData = await response.json();
-        setLearningData(data);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred."
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadLearningData();
-  }, []);
 
   // 로딩 상태
   if (isLoading) {
@@ -153,7 +131,10 @@ const LearningPageViewer: React.FC<LearningPageViewerProps> = ({
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white border-b border-gray-200 px-4 py-3">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              AndroidApi.vibrate({ duration: 100 });
+              navigate(-1);
+            }}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -232,9 +213,10 @@ const LearningPageViewer: React.FC<LearningPageViewerProps> = ({
               <LearningCard
                 title={topic.title}
                 description={topic.description}
-                onClick={() =>
-                  navigate(`/education/${actualCategoryId}/${topic.id}`)
-                }
+                onClick={() => {
+                  AndroidApi.vibrate({ duration: 100 });
+                  navigate(`/education/${actualCategoryId}/${topic.id}`);
+                }}
               />
             </div>
           ))}

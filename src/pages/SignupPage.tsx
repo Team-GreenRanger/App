@@ -15,6 +15,8 @@ import { useNavigate } from "react-router-dom";
 import { publicApi } from "../api";
 import { ToastModal } from "../components";
 import { saveAuthData } from "../utils/auth.utils";
+import { AndroidApi } from "../api";
+import countryData from "../assets/data/country.json";
 
 interface FormData {
   email: string;
@@ -67,33 +69,27 @@ const SignupPage = () => {
 
   // Load countries from JSON file
   useEffect(() => {
-    const loadCountries = async () => {
-      try {
-        const response = await fetch("/country.json");
-        const data: CountryData = await response.json();
-        setCountries(data.countries);
-        setFilteredCountries(data.countries);
-      } catch (error) {
-        console.error("Failed to load countries:", error);
-        // Fallback to a basic list if JSON loading fails
-        const fallbackCountries = [
-          "South Korea",
-          "United States",
-          "Japan",
-          "China",
-          "Germany",
-          "France",
-          "United Kingdom",
-          "Canada",
-          "Australia",
-          "Brazil",
-        ];
-        setCountries(fallbackCountries);
-        setFilteredCountries(fallbackCountries);
-      }
-    };
-
-    loadCountries();
+    try {
+      setCountries(countryData.countries);
+      setFilteredCountries(countryData.countries);
+    } catch (error) {
+      console.error("Failed to load countries:", error);
+      // Fallback to a basic list if JSON loading fails
+      const fallbackCountries = [
+        "South Korea",
+        "United States",
+        "Japan",
+        "China",
+        "Germany",
+        "France",
+        "United Kingdom",
+        "Canada",
+        "Australia",
+        "Brazil",
+      ];
+      setCountries(fallbackCountries);
+      setFilteredCountries(fallbackCountries);
+    }
   }, []);
 
   // Filter countries based on search term
@@ -113,12 +109,14 @@ const SignupPage = () => {
   };
 
   const handleCountrySelect = (country: string) => {
+    AndroidApi.vibrate({ duration: 100 });
     setFormData((prev) => ({ ...prev, nationality: country }));
     setShowCountryDropdown(false);
     setCountrySearchTerm("");
   };
 
   const handleCountryDropdownToggle = () => {
+    AndroidApi.vibrate({ duration: 100 });
     setShowCountryDropdown(!showCountryDropdown);
     if (!showCountryDropdown) {
       setCountrySearchTerm("");
@@ -186,6 +184,7 @@ const SignupPage = () => {
   const handleSignUp = async () => {
     if (!validateForm()) return;
 
+    AndroidApi.vibrate({ duration: 150 });
     setIsLoading(true);
     try {
       const response = await publicApi.post<SignupResponse>("/auth/register", {
@@ -237,6 +236,7 @@ const SignupPage = () => {
   };
 
   const handleLoginLink = () => {
+    AndroidApi.vibrate({ duration: 100 });
     navigate("/login");
   };
 
