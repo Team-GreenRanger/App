@@ -205,8 +205,14 @@ const App: React.FC = () => {
             <Route path="/education" element={<EducationPage />} />
             <Route path="/education/climate-change" element={<LearningPageViewer categoryId="climate-change" />} />
             <Route path="/education/extreme-weather" element={<LearningPageViewer categoryId="extreme-weather" />} />
+            <Route path="/education/waste-management" element={<LearningPageViewer categoryId="waste-management" />} />
+            <Route path="/education/sustainable-living" element={<LearningPageViewer categoryId="sustainable-living" />} />
+            <Route path="/education/green-transportation" element={<LearningPageViewer categoryId="green-transportation" />} />
             <Route path="/education/climate-change/:topicId" element={<LearningPageViewer categoryId="climate-change" />} />
             <Route path="/education/extreme-weather/:topicId" element={<LearningPageViewer categoryId="extreme-weather" />} />
+            <Route path="/education/waste-management/:topicId" element={<LearningPageViewer categoryId="waste-management" />} />
+            <Route path="/education/sustainable-living/:topicId" element={<LearningPageViewer categoryId="sustainable-living" />} />
+            <Route path="/education/green-transportation/:topicId" element={<LearningPageViewer categoryId="green-transportation" />} />
 
             {/* AI 쓰레기 분리수거 라우트 */}
             <Route path="/ai-trash-camera" element={<AiTrashCameraPage />} />

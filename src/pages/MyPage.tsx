@@ -478,8 +478,8 @@ const MyPage: React.FC = () => {
       </div>
 
       {showPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
+        <div className="modal-backdrop">
+          <div className="modal-content">
             <h3 className="text-lg font-semibold mb-4">Change Password</h3>
             <div className="space-y-4">
               <input
@@ -538,8 +538,8 @@ const MyPage: React.FC = () => {
       )}
 
       {showDeactivateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
+        <div className="modal-backdrop">
+          <div className="modal-content">
             <h3 className="text-lg font-semibold mb-2 text-red-600">
               Deactivate Account
             </h3>
