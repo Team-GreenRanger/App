@@ -5,6 +5,7 @@ import LearningCard from "../components/LearningCard";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import learningData from "../assets/data/learning-data.json";
 import { AndroidApi } from "../api";
+import ReactMarkdown from "react-markdown";
 
 // 학습 데이터 타입 정의
 interface LearningTopic {
@@ -170,7 +171,7 @@ const LearningPageViewer: React.FC<LearningPageViewerProps> = ({
             {/* 내용 */}
             <div className="prose max-w-none">
               <p className="text-lg leading-relaxed text-gray-800">
-                {topic.content}
+                <ReactMarkdown>{topic.content}</ReactMarkdown>
               </p>
             </div>
 
